@@ -1,0 +1,7 @@
+fastapi==0.96.0
+sqlmodel==0.0.8
+typing_extensions==4.6.3
+uvicorn
+Jinja2
+python-multipart
+psycopg2
