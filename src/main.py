@@ -5,7 +5,7 @@ from sqlmodel import Session
 from fastapi.templating import Jinja2Templates
 from fastapi import FastAPI, Request, Form, Path
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-
+from typing import Annotated
 
 app = FastAPI()
 allowed_origins = ["*"]
@@ -24,6 +24,9 @@ templates = Jinja2Templates(directory="./templates")
 def main(request: Request):
     return templates.TemplateResponse('login.html', {'request': request})
 
+@app.post('/dashboard')
+def login(username: Annotated[str, Form()], password: Annotated[str, Form()]):
+	return { username : password }
 
 @app.get('/hello-world')
 def hello_world(request: Request):
