@@ -15,11 +15,11 @@ class Projects(SQLModel, table=True):
 class Users(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
     login: str = Field(max_length=50)
-    password: str = Field(max_length=50)
+    password: str = Field(max_length=200)
     name: str = Field(max_length=50)
     surname: str = Field(max_length=50)
     role: str = Field(max_length=50)
-    project_id: int
+    project_id: Optional[int]
 
 
 class TechnicalResources(SQLModel, table=True):
