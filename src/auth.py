@@ -16,11 +16,11 @@ class AuthHandler:
 	def verify(self, plainPassword, hashedPassword):
 		return self.context.verify(plainPassword, hashedPassword)
 		
-	def encodeToken(self, username):
+	def encodeToken(self, login):
 		return jwt.encode(
 			{
 			"iat" : datetime.utcnow(),
-			"sub" : username
+			"sub" : login
 			},
 			self.secret,
 			algorithm = "HS256"

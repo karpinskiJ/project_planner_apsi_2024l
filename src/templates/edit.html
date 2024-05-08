@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="the_style.css">
+</head>
+<body>
+<div class="container">
+	{% include "headers.html" %}
+    <form method="post" action="{{target}}">
+		{% for field in liste %}
+			<div class="form-group">
+				<label for="{{field.name}}">{{field.label}}:</label>
+				<input type="{{field.type}}" class="form-control" 
+					id="{{field.name}}" name="{{field.name}}" required>
+			</div>
+		{% endfor %}
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" value="{{enter}}">
+        </div>
+    </form>
+</div>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
