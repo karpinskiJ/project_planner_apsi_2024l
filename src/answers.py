@@ -3,6 +3,7 @@ import copy
 from toEdit import ToEdit
 from sqlModels import titleStr
 from widgets import *
+from globs import authHandler
 
 class Answer:
 
@@ -15,7 +16,10 @@ class Answer:
 		variables = copy.copy(self.variables)
 		variables['request'] = request
 		variables['logged'] = self.logged and logged
-		return templates.TemplateResponse(self.template, variables)
+		response = templates.TemplateResponse(self.template, variables)
+		if hasattr(self, "newLogin"):
+			response.set_cookie(key = "token", value = authHandler.encodeToken(self.newLogin))
+		return response
 		
 class MessageAnswer(Answer):
 
@@ -62,17 +66,19 @@ class CannotDeleteAnswer(ErrorAnswer):
 class SuccessCreateAnswer(SuccessAnswer):
 
 	def __init__(self, kind, model):
-		super().__init__("Successfully created " + kind + ": " + models.nameOf(kind, model))
+		super().__init__("Successfully created " + kind + ": " + model.uniqueName())
 		
 class SuccessChangeAnswer(SuccessAnswer):
 	
-	def __init__(self, kind, model):
-		super().__init__("Successfully changed " + kind + ": " + models.nameOf(kind, model))
+	def __init__(self, kind, model, changeLogin):
+		super().__init__("Successfully changed " + kind + ": " + model.uniqueName())
+		if changeLogin:
+			self.newLogin = model.login
 		
 class SuccessDeleteAnswer(SuccessAnswer):
 	
 	def __init__(self, kind, model):
-		super().__init__("Successfully deleted " + kind + ": " + models.nameOf(kind, model))
+		super().__init__("Successfully deleted " + kind + ": " + model.uniqueName())
 		
 def editMessageHeader(kind, model):
 	if model:
@@ -177,6 +183,7 @@ class ListAnswer(LookAnswer):
 			title += " of " + of + " " + item
 		super().__init__(title, "liste.html")
 		self.variables['liste'] = liste
+		self.variables['kind'] = kind
 		
 class LackOfFieldsAnswer(ErrorAnswer):
 	

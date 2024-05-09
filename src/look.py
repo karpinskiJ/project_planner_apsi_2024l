@@ -24,14 +24,14 @@ def lookOneInternal(kind, item, user = None):
 		if user.canDeleteUser(User(item)):
 			answer.addButton("Delete user", "/delete?kind=user&item=" + item)
 		if showProjectsOption:
-			answer.addButton("Show projects", "/look?kind=projects&of=user&item=" + item)
+			answer.addButton("Show projects", "/look?kind=project&of=user&item=" + item)
 	elif kind == "project":
 		if user.canJoinProject(item):
 			answer.addButton("Join project", "/join?name=" + item)
 		if user.canEdit("project", item):
 			answer.addButton("Edit project", "/edit?kind=project&item=" + item)
 			answer.addButton("Delete project", "/delete?kind=project&item=" + item)
-		answer.addButton("Show resources", "/look?kind=resources&of=project&item=" + item)
+		answer.addButton("Show resources", "/look?kind=resource&of=project&item=" + item)
 		with closing(DatabaseInterface()) as interface:
 			onwer = database.ownerOf(model)
 			answer.addLink("Owner", owner, "/lookOne?kind=user&item=" + owner)
@@ -52,7 +52,7 @@ def lookInternal(kind, of, item, user = None):
 	if item == True:
 		item = user
 	with closing(DatabaseInterface()) as database:
-		if kind == "projects":
+		if kind == "project":
 			if of == "user":
 				liste = database.getProjectsOf(of, item)
 				if item == True and User(user).canEditProject():
@@ -64,14 +64,14 @@ def lookInternal(kind, of, item, user = None):
 				liste = database.getAllProjects()
 			else:
 				return PageNotExistAnswer()
-		elif kind == "users":
+		elif kind == "user":
 			if of == "project":
 				liste = database.getUsersOfProject(item)
 			elif of is None:
 				liste = database.getAllUsers()
 			else:
 				return PageNotExistAnswer()
-		elif kind == "resources":
+		elif kind == "resource":
 			if of == "project":
 				liste = database.getResourcesOfProject(item)
 			elif of is None:

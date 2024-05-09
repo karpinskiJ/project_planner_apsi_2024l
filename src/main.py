@@ -207,7 +207,7 @@ def join(request: Request, name: Annotated[str, Query()] = None,
 			user.project_id = project.id
 			database.add(user)
 			database.commit()
-			return RedirectResponse("/dashboard?kind=projects")
+			return RedirectResponse("/dashboard?kind=project")
 	else:
 		return CannotJoinProjectAnswer(name).toHTML(request)
 
@@ -219,8 +219,8 @@ def dashboard(request: Request, kind: Annotated[str, Query()] = None,
 		return user.toHTML(request)
 	if kind == "user":
 		return lookOneInternal("user", True, user).toHTML(request)
-	elif kind == "projects":
-		return lookInternal("projects", "user", True, user).toHTML(request)
+	elif kind == "project":
+		return lookInternal("project", "user", True, user).toHTML(request)
 
 @app.get('/lookOne', response_class = HTMLResponse)
 def lookOne(request: Request, kind: Annotated[str, Query()] = None,

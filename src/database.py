@@ -23,7 +23,7 @@ class DatabaseInterface:
 		return self.modelOfName(kind, name).id
 	
 	def isAdmin(self, user):
-		ide = self.idOfName("users", user.login)
+		ide = self.idOfName("user", user)
 		if ide is None:
 			raise DatabaseException()
 		return self.session.exec(select(Admins.id).where(Admins.id == ide)).first()
@@ -92,9 +92,9 @@ class DatabaseInterface:
 		return self.session.exec(select(Technical_Resources.name)).all()
 		
 	def empty(self, kind):
-		if kind == "users":
+		if kind == "user":
 			return len(self.getAllUsers()) == 0
-		elif kind == "projects":
+		elif kind == "project":
 			return len(self.getAllProjects()) == 0
-		elif kind == "resources":
+		elif kind == "resource":
 			return len(self.getAllResources()) == 0
