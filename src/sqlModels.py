@@ -1,6 +1,6 @@
 from sqlmodel import Field, SQLModel
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, Self, Any
 
 class Projects(SQLModel, table=True):
 	id: Optional[int] = Field(primary_key=True)
@@ -9,9 +9,15 @@ class Projects(SQLModel, table=True):
 	start_date: date
 	end_date: date
 	status: str
+	owner_id: int
     
-	def uniqueName(self):
-		return self.name
+	def __getattr__(self: Self, attr: str) -> Any:
+		if attr == "uniqueName":
+			return self.login
+		raise AttributeError(attr)
+		
+	def acceptVisitor(self: Self, visitor: Any) -> Any:
+		return visitor.visitProject(self)
 		
 class Users(SQLModel, table=True):
 	id: Optional[int] = Field(primary_key=True)
@@ -22,40 +28,28 @@ class Users(SQLModel, table=True):
 	role: str = Field(max_length=50)
 	project_id: Optional[int]
 	
-	def uniqueName(self):
-		return self.login
+	def __getattr__(self: Self, attr: str) -> Any:
+		if attr == "uniqueName":
+			return self.login
+		raise AttributeError(attr)
+		
+	def acceptVisitor(self: Self, visitor: Any) -> Any:
+		return visitor.visitUser(self)
 
 class Technical_Resources(SQLModel, table=True):
 	id: Optional[int] = Field(primary_key=True)
 	name: str = Field(max_length=100)
 	project_id: Optional[int]
-
-	def uniqueName(self):
-		return self.name
-
-class Admins(SQLModel, table = True):
-	id: int = Field(primary_key = True)
-	super_id: Optional[int]
 	
-def titleStr(kind):
-	if kind == "user":
-		return "login"
-	else:
-		return "name"
+	def __getattr__(self: Self, attr: str) -> Any:
+		if attr == "uniqueName":
+			return self.name
+		raise AttributeError(attr)
 		
-def titleField(kind):
-	print("kind:", kind)
-	if kind == "user":
-		return Users.login
-	elif kind == "project":
-		return Project.name
-	elif kind == "resource":
-		return Technical_Resources.name
+	def acceptVisitor(self: Self, visitor: Any) -> Any:
+		return visitor.visitResource(self)
 		
-def model(kind):
-	if kind == "user":
-		return Users
-	elif kind == "project":
-		return Projects
-	elif kind == "resource":
-		return Technical_Resources
+class System_Admins(SQLModel, table = True):
+	id: int = Field(primary_key = True)
+	parent_id: Optional[int]
+	promotion_time: datetime

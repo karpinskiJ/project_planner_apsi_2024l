@@ -15,9 +15,7 @@
 {% for link in links %}
 	<label>{{link.label}}:&nbsp;</label><a href="{{link.link}}"><label>{{link.text}}</label></a>
 {% endfor %}
-{% for button in buttons %}
-	<a href="{{button.link}}"><button>{{button.text}}</button></a>
-{% endfor %}
+{% include "buttons.html" %}
 </div>
 </body>
 </html>

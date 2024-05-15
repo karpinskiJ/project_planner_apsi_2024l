@@ -1,28 +1,33 @@
 from answers import *
-from database import DatabaseInterface
-from contextlib import closing
 from globs import authHandler
+from inputModels import InputModel
+from wraps import General, User
+import wraps
 
-def edited(kind, model, item):
-	changeLogin = None
-	with closing(DatabaseInterface()) as database:
-		if hasattr(model, "uniqueName") and database.exists(kind, model.uniqueName()):
-			return NameAlreadyExistsAnswer(kind, item, model)
-		reason = model.nonConsistent()
-		if reason:
-			return NonConsistentErrorAnswer(reason)
-		admin = False
-		if kind == "user" and model.password:
-			model.password = authHandler.hash(model.password)
-			if item is None and database.empty("user"):
-				admin = True
-		database.edit(kind, model, item)
-		database.commit()
-		if admin:
-			database.makeAdmin(model)
-			database.commit()
-		changeLogin = kind == "user" and hasattr(model, "login") and model.login != item
+def edited(kind: str, model: InputModel, item: str | NoneType = None,
+	user: User | NoneType = None) -> Answer:
+	print("item in edited: ", item)
+	if hasattr(model, "uniqueName") and General().makeOfModel(model).exists:
+		return NameAlreadyExistsAnswer(kind, item, model.uniqueName)
+	if hasattr(model, "old") and not authHandler.verify(model.old, user.model.password):
+		return BadPasswordAnswer()
+	reason = model.notConsistent
+	if reason:
+		return NotConsistentAnswer(reason)
+	admin = False
+	if kind == "user" and hasattr(model, "password"):
+		model.password = authHandler.hash(model.password)
+		if item is None and General().empty("user"):
+			admin = True
+	General().edit(model, General.make(kind, item) if item else None)
+	if kind == "project" and not item:
+		user.project = wraps.Project(model)
+	if admin:
+		User(model).makeAdmin()
+	newToken = ( authHandler.encodeToken(model.login) if
+		kind == "user" and hasattr(model, "login") and model.login != item
+		else None )
 	if item:
-		return SuccessChangeAnswer(kind, model, changeLogin)
+		return SuccessChangeAnswer(kind, General().makeOfModel(model, item).uniqueName, newToken)
 	else:
-		return SuccessCreateAnswer(kind, model)
+		return SuccessCreateAnswer(kind, General().makeOfModel(model).uniqueName)
