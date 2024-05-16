@@ -14,7 +14,7 @@ class Projects(SQLModel, table=True):
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.login
-		raise AttributeError(attr)
+		raise AttributeError(attr, self.__class__)
 		
 	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitProject(self)
@@ -27,11 +27,12 @@ class Users(SQLModel, table=True):
 	surname: str = Field(max_length=50)
 	role: str = Field(max_length=50)
 	project_id: Optional[int]
+	setup_time: datetime
 	
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.login
-		raise AttributeError(attr)
+		raise AttributeError(attr, self.__class__)
 		
 	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitUser(self)
@@ -44,7 +45,7 @@ class Technical_Resources(SQLModel, table=True):
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.name
-		raise AttributeError(attr)
+		raise AttributeError(attr, self.__class__)
 		
 	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitResource(self)

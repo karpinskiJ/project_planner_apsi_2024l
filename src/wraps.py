@@ -29,11 +29,7 @@ class General:
 	@staticmethod
 	def make(kind: str, item: str | int | InputModel) -> Self:
 		if kind == "user":
-			print("Item in make: ", item)
-			user = User(item)
-			if user is not None:
-				print("dict ", user.__dict__)
-			return user
+			return User(item)
 		elif kind == "project":
 			return Project(item)
 		elif kind == "resource":
@@ -63,22 +59,17 @@ class General:
 		self.session = session
 		
 	def __ne__(self: Self, another: Self) -> bool:
-		print("Another:", another)
 		return not self == another	
 				
 	def __getattr__(self: Self, attr: str) -> Any:
-		print("If model:", attr == "model")
 		if attr == "id" or attr == "model":
 			kind = self.__class__.kind
 			model = elemental.modelType(kind)
 			model = model if attr == "model" else model.id
-			print("Unique name: ", self.uniqueName)
 			with self.subsession as subsession:
-				ide = subsession(Query(
+				return subsession(Query(
 					select(model).where(elemental.uniqueNameField(kind) == self.uniqueName)
 					))
-				print("ide: ", ide)
-				return ide
 		elif attr == "exists":
 			return self.id is not None
 		elif attr == "subsession":
@@ -92,10 +83,6 @@ class General:
 	def edit(self: Self, model: InputModel, item: Self | NoneType = None) -> NoneType:
 		old = None
 		if item:
-			print("Item: ", item)
-			print("Type: ", type(item))
-			print("Dict: ", item.__dict__)
-			#print("Item login: ", item.login)
 			old = item.model
 			model.sendTo(old)
 		with self.subsession as subsession:
@@ -122,8 +109,6 @@ class User(General):
 		ide: str | int | inpute.UserCredentials | inpute.User,
 		session: AbstractSession | NoneType = None) -> NoneType:
 		super().init(session)
-		print("None: ", ide is None)
-		print("Type: ", type(ide))
 		if type(ide) == str:
 			self.login = ide
 		elif type(ide) == int:
@@ -132,9 +117,8 @@ class User(General):
 			self.login = ide.login
 		elif type(ide) == inpute.User:
 			self.login = ide.credentials.login
-			print("Login here: ", self.login)
 		else:
-			raise ValueError(ide)
+			raise ValueError(ide, self.__class__)
 		
 	def __eq__(self: Self, another: Self) -> bool:
 		return another and self.login == another.login
@@ -163,7 +147,6 @@ class User(General):
 			( not another.admin or another.inherits(self) ) )
 	
 	def owner(self: Self, project: Project) -> bool:
-		print("Project __dict__:", project.__dict__)
 		with self.subsession as subsession:
 			return (subsession(Query(
 				select(sql.Projects.owner_id).where(sql.Projects.name == project.name)
@@ -191,13 +174,12 @@ class User(General):
 		if self.admin:
 			self.degrade()
 		self.deleteProjects()
-		with self.subsession as subsession:
-			subsession.add(self.model, toDelete = True)
+		super().delete()
 		
 	def deleteProjects(self: Self) -> NoneType:
 		project = self.project
 		if project and self.owner(project):
-			project.delete(exception = self)
+			project.delete()
 				
 	def degrade(self: Self) -> NoneType:
 		parent = self.parent
@@ -208,6 +190,12 @@ class User(General):
 					if first != child:
 						child.parent = first
 				first.parent = None
+			else:
+				first = self.firstUser
+				if first:
+					first.makeAdmin(self)
+					self.degrade()
+					return
 		else:
 			for child in self.children:
 				child.parent = parent
@@ -228,7 +216,7 @@ class User(General):
 	
 		elif attr == "parent":
 			if not self.admin:
-				raise AttributeError("parent", self.__class__)
+				raise AttributeError(attr, self.__class__)
 			with self.subsession as subsession:
 				return User(subsession(Query(
 					select(sql.System_Admins.parent_id).where(sql.System_Admins.id == self.id)
@@ -236,7 +224,7 @@ class User(General):
 			
 		elif attr == "children":
 			if not self.admin:
-				raise AttributeError("children", self.__class__)
+				raise AttributeError(attr, self.__class__)
 			with self.subsession as subsession:
 				return [ User(ide, self.session) for ide in subsession(Query(
 					select(sql.System_Admins.id).where(sql.System_Admins.parent_id == self.id),
@@ -247,16 +235,36 @@ class User(General):
 			firstChild = None
 			for child in self.children:
 				with self.subsession as subsession:
-					ide, newDate = subsession(Query(
-						select(sql.System_Admins.id, sql.System_Admins.date)
+					result = subsession(Query(
+						select(sql.System_Admins.id, sql.System_Admins.promotion_time)
 						.where(sql.System_Admins.id == child.id)
 						))
+					if result:
+						ide, newDate = result
 				if date is None or newDate < date:
 					date = newDate
 					firstChild = ide
 			if firstChild is not None:
 				firstChild = User(firstChild)
 			return firstChild
+			
+		elif attr == "firstUser":
+			date = None
+			firstUser = None
+			for user in self.all("user"):
+				with self.subsession as subsession:
+					result = subsession(Query(
+						select(sql.Users.id, sql.Users.setup_time)
+						.where(sql.Users.id == user.id)
+						))
+					if result:
+						ide, newDate = result
+				if self != user and (date is None or newDate < date):
+					date = newDate
+					firstUser = ide
+			if firstUser is not None:
+				firstUser = User(firstUser)
+			return firstUser
 			
 		elif attr == "position":
 			if self.admin:
@@ -268,21 +276,22 @@ class User(General):
 				return "usual"
 				
 		elif attr == "project":
-			print("There")
 			with self.subsession as subsession:
 				return Project(
 					subsession(Query(
 						select(sql.Users.project_id).where(sql.Users.login == self.login)
 						)), self.session)
+						
+		elif attr == "owns":
+			return self.project is not None and self.project.owner == self
 		
-		print("Here")
 		return super().__getattr__(attr)
 	
 	def __setattr__(self: Self, attr: str, value: Any) -> NoneType:
 		if attr == "parent":
 			with self.subsession as subsession:
 				if not self.admin:
-					raise AttributeError("parent")
+					raise AttributeError(attr, self.__class__)
 				row = subsession(Query(
 					select(sql.System_Admins).where(sql.System_Admins.id == self.id)
 					))
@@ -290,14 +299,11 @@ class User(General):
 				subsession.add(row)
 				return
 		elif attr == "project":
-			print("Project assigning")
-			print("Value earlier: ", value)
 			value = None if (value is None) else value.id
 			with self.subsession as subsession:
 				row = subsession(Query(
 					select(sql.Users).where(sql.Users.login == self.login)
 					))
-				print("Value: ", value)
 				row.project_id = value
 				subsession.add(row)
 				return	
@@ -321,7 +327,7 @@ class Project(General):
 		elif type(ide) == inpute.Project:
 			self.name = ide.name
 		else:
-			raise ValueError(ide)
+			raise ValueError(ide, self.__class__)
 			
 	def __eq__(self: Self, another: Self) -> bool:
 		return another and self.name == another.name
@@ -350,10 +356,9 @@ class Project(General):
 				
 		return super().__getattr__(attr)
 		
-	def delete(self: Self, *, exception: User | NoneType = None) -> NoneType:
+	def delete(self: Self) -> NoneType:
 		for user in self.users:
-			if user != exception:
-				user.project = None
+			user.project = None
 		for resource in self.resources:
 			resource.project = None
 		super().delete()
@@ -375,7 +380,7 @@ class Resource(General):
 		elif type(ide) == inpute.Resource:
 			self.name = ide.name
 		else:
-			raise ValueError(ide)
+			raise ValueError(ide, self.__class__)
 			
 	def __eq__(self: Self, another: Self) -> bool:
 		return another and self.name == another.name

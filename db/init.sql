@@ -23,6 +23,7 @@ CREATE TABLE users(
 	surname  varchar(50) NOT NULL,
 	role     varchar(50) NOT NULL,
 	project_id integer,
+	setup_time timestamp NOT NULL,
 	CONSTRAINT pk_users PRIMARY KEY ( "id" ),
 	CONSTRAINT fk_users_projects FOREIGN KEY ( project_id ) REFERENCES projects ( "id" )
 );

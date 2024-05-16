@@ -6,7 +6,6 @@ from typing import Self, Any
 class Query:
 
 	def __init__(self: Self, content, multiple: bool = False) -> NoneType:
-		print("Content: ", type(content))
 		self.content = content
 		self.multiple = multiple
 		
@@ -33,7 +32,7 @@ class Session(AbstractSession):
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "toSession":
 			return self
-		raise AttributeError(attr)
+		raise AttributeError(attr, self.__class__)
 		
 	def addGeneral(self: Self, general: "General") -> NoneType:
 		self.generals.append(general)
@@ -55,7 +54,7 @@ class ProxySession(AbstractSession):
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "toSession":
 			return self.session
-		raise AttributeError(attr)
+		raise AttributeError(attr, self.__class__)
 		
 	def close(self: Self) -> NoneType:
 		pass

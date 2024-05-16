@@ -8,7 +8,7 @@ from answers import *
 from look import *
 from edit import edited
 import inputModels as inpute
-from wraps import User, Project
+from wraps import User, Project, Resource
 import wraps
 from globs import app, authHandler
 from myToken import *
@@ -34,9 +34,11 @@ def register(request: Request, token: Annotated[str | NoneType, Cookie()] = None
 		return AlreadyLoggedInAnswer().toHTML(request)
 	return ToEditAnswer("user", empty.User().acceptVisitor(ToEditVisitor)).toHTML(request, False)
 
+@app.post('/delete', response_class = HTMLResponse)
 @app.get('/delete', response_class = HTMLResponse)
 def delete(request: Request, kind: Annotated[str | NoneType, Query()] = None,
 	item: Annotated[str | NoneType, Query()] = None, 
+	password: Annotated[str | NoneType, Form()] = None,
 	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
 	user = checkToken(token)
 	if isinstance(user, Answer):
@@ -58,8 +60,17 @@ def delete(request: Request, kind: Annotated[str | NoneType, Query()] = None,
 	else:
 		if not user.canEdit(kind, wrap):
 			return CannotDeleteAnswer(kind, item).toHTML(request)
+	if kind == "user" and user == wrap:
+		if password is None:
+			return (CommitAnswer(ToEditVisitor.visitCommit(), "/delete?kind=user&item=" + item)
+				.toHTML(request))
+		elif not authHandler.verify(password, wrap.model.password):
+			return BadPasswordAnswer().toHTML(request)
 	wrap.delete()
-	return SuccessDeleteAnswer(kind, item).toHTML(request, not(kind == "user" and user == wrap) )
+	delete = SuccessDeleteAnswer(kind, item).toHTML(request, not(kind == "user" and user == wrap) )
+	if kind == "user" and user == wrap:
+		delete.delete_cookie("token")
+	return delete
 
 @app.get('/promote', response_class = HTMLResponse)
 def promote(request: Request, item: Annotated[str | NoneType, Query()] = None,
@@ -123,7 +134,32 @@ def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
 			return CannotChangeAnswer(kind, item).toHTML(request)
 	return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor,
 		advanced = advanced), item, advanced = advanced).toHTML(request)
-		
+
+@app.get('/compose', response_class = HTMLResponse)
+def compose(request: Request, item: Annotated[str, Query()] = None,
+	compose: Annotated[bool, Query()] = True,
+	token: Annotated[str, Cookie()] = None):
+	user = checkToken(token)
+	if isinstance(user, Answer):
+		return user.toHTML(request)
+	user = User(user)
+	wrap = Resource(item)
+	if not wrap.exists:
+		return ItemNotExistsAnswer("resource", item).toHTML(request)
+	if not user.owns:
+		return CannotChangeAnswer("resource", item).toHTML(request)
+	if compose:
+		if wrap.project:
+			return CannotChangeAnswer("resource", item).toHTML(request)
+		wrap.project = user.project
+		return SuccessAnswer("Successfully added resource").toHTML(request)
+	else:
+		if user.project != wrap.project:
+			return CannotChangeAnswer("resource", item).toHTML(request)
+		wrap.project = None
+		return SuccessAnswer("Successfully released resource").toHTML(request)
+	
+	
 @app.post('/user', response_class = HTMLResponse)
 def user(request: Request, login: Annotated[str | NoneType, Form()] = None, 
 	password: Annotated[str | NoneType, Form()] = None,
@@ -162,10 +198,7 @@ def project(request: Request, name: Annotated[str | NoneType, Form()] = None,
 	if not user.canEditProject(wrap):
 		return CannotChangeAnswer("project", item).toHTML(request)
 	if item is None:
-		print("Tutaj")
 		inputModel.owner = user
-		if wrap is None:
-			print("None wrap")
 	return edited("project", inputModel, item, user).toHTML(request)
 	
 @app.post('/resource', response_class = HTMLResponse)
@@ -190,9 +223,7 @@ def logged(request: Request,
 	password: Annotated[str | NoneType, Form()] = None) -> Response:
 	if login is None or password is None:
 		return PageNotExistAnswer().toHTML(request, False)
-	print(type(login))
 	wrap = User(login)
-	print("Wrap login: ", wrap.login)
 	if not wrap.exists:
 		return ItemNotExistsAnswer("user", login).toHTML(request, False)
 	elif not authHandler.verify(password, wrap.model.password):

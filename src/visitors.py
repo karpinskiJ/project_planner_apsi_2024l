@@ -91,7 +91,12 @@ class ToEditVisitor:
 			ToEdit("login", "Login", ""),
 			ToEdit("password", "Password", "", typee = "password")
 			]
-			
+	
+	@staticmethod
+	def visitCommit() -> list[widgets.ToEdit]:
+		return [
+			ToEdit("password", "Type password", "", typee = "password")
+		]
 class LinkVisitor:
 	# This visitor visits wraps
 	# for getting their unique names

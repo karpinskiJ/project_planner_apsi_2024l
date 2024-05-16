@@ -6,8 +6,8 @@ import wraps
 
 def edited(kind: str, model: InputModel, item: str | NoneType = None,
 	user: User | NoneType = None) -> Answer:
-	print("item in edited: ", item)
-	if hasattr(model, "uniqueName") and General().makeOfModel(model).exists:
+	if ( hasattr(model, "uniqueName") and item != model.uniqueName
+		and General().makeOfModel(model).exists ):
 		return NameAlreadyExistsAnswer(kind, item, model.uniqueName)
 	if hasattr(model, "old") and not authHandler.verify(model.old, user.model.password):
 		return BadPasswordAnswer()

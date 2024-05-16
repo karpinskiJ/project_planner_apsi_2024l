@@ -2,7 +2,7 @@ import sqlModels as sql
 from widgets import Label
 from typing import Any, Self
 from types import NoneType
-from datetime import date
+from datetime import date, datetime
 
 class OldPassword:
 	
@@ -24,19 +24,15 @@ class InputModel:
 			return None
 		if old and nothing(old.value):
 			return None
-		print("Teraz 2")
 		obj = super().__new__(cls)
-		print("Teraz 3")
-		print(args)
 		obj.init(old = old.value if old else None, *args)
-		print("Teraz 4")
 		return obj
 		
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "notConsistent":
 			return None
 		else:
-			raise AttributeError(attr)
+			raise AttributeError(attr, self.__class__)
 
 class Project(InputModel):
 
@@ -116,11 +112,7 @@ class FullUserCredentials(UserCredentials):
 
 	def init(self: Self, login: str, password: str, repeated: str, *,
 		old: str | NoneType = None) -> NoneType:
-		print("password:", password)
-		print("repeated:", repeated)
-		print("Teraz 5")
 		super().init(login, old = old)
-		print("Teraz 6")
 		self.password = password
 		self.repeated = repeated
 	
@@ -149,7 +141,7 @@ class User(InputModel):
 		elif attr == "toSQL":
 			return sql.Users(login = self.credentials.login, password = self.credentials.password, 
 				name = self.description.name, surname = self.description.surname,
-				role = self.description.role)
+				role = self.description.role, setup_time = datetime.now())
 		elif attr == "password":
 			return self.credentials.password
 		return super().__getattr__(attr)
@@ -187,7 +179,6 @@ def makeUserCredentials(login: str | NoneType, password: str | NoneType,
 		if nothing(password) and nothing(repeated) and not newRequired:
 			return UserCredentials([login], old = old)
 		else:
-			print("Teraz")
 			return FullUserCredentials([login, password, repeated],
 				old = old)
 

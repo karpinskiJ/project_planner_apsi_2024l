@@ -10,6 +10,4 @@ DATABASE_URL = f'postgresql://{USER_NAME}:{PASSWORD}@{HOST}/{DB_NAME}'
 
 def get_engine():
 	# I do not known the return value type
-	engine = create_engine(DATABASE_URL)
-	print("Engine: ", type(engine))
-	return engine
+	return create_engine(DATABASE_URL)

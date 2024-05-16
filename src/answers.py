@@ -19,7 +19,6 @@ class Answer:
 		variables = copy.copy(self.variables)
 		variables['request'] = request
 		variables['logged'] = self.logged and logged
-		print("logged: ", variables['logged'])
 		response = templates.TemplateResponse(self.template, variables)
 		if hasattr(self, "newToken"):
 			response.set_cookie(key = "token", value = self.newToken)
@@ -156,6 +155,20 @@ class ToLoginAnswer(Answer):
 		self.variables['header'] = header
 		self.variables['subheader'] = subheader
 		self.variables['enter'] = "Log in"
+	
+def commitMessageHeader() -> tuple[str, str | NoneType, str | NoneType]:
+	return "Commit", None, None
+	
+class CommitAnswer(Answer):
+
+	def __init__(self: Self, toEdits: list[widgets.ToEdit], target: str) -> NoneType:
+		title, header, subheader = commitMessageHeader()
+		super().__init__("edit.html", title)
+		self.variables['liste'] = toEdits
+		self.variables['target'] = target
+		self.variables['header'] = header
+		self.variables['subheader'] = subheader
+		self.variables['enter'] = "Commit"
 		
 class BadPasswordAnswer(ErrorAnswer):
 	
