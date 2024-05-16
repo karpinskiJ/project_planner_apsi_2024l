@@ -80,12 +80,6 @@ class UserDescription(InputModel):
 		sqlModel.name = self.name
 		sqlModel.surname = self.surname
 		sqlModel.role = self.role
-		
-	def __getattr__(self: Self, attr: str) -> Any:
-		if attr == "password":
-			return None
-		else:
-			return super().__getattr__(attr)
 			
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitUser(item)

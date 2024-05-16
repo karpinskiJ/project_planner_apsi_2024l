@@ -10,13 +10,7 @@ class Query:
 		self.multiple = multiple
 		
 class AbstractSession:
-
-	def add(self: Self, row: sqlmodel.SQLModel, *, toDelete: bool = False) -> NoneType:
-		if toDelete:
-			self.session.delete(row)
-		else:
-			self.session.add(row)
-		self.session.commit()
+	pass
 
 class Session(AbstractSession):
 
@@ -41,6 +35,14 @@ class Session(AbstractSession):
 		self.session.close()
 		for general in self.generals:
 			general.session = None
+			
+	def add(self: Self, row: sqlmodel.SQLModel, *, toDelete: bool = False) -> NoneType:
+		if toDelete:
+			self.session.delete(row)
+		else:
+			self.session.add(row)
+		self.session.commit()
+
 
 class ProxySession(AbstractSession):
 	
@@ -55,6 +57,9 @@ class ProxySession(AbstractSession):
 		if attr == "toSession":
 			return self.session
 		raise AttributeError(attr, self.__class__)
+		
+	def add(self: Self, row: sqlmodel.SQLModel, *, toDelete: bool = False) -> NoneType:
+		self.session.add(row, toDelete = toDelete)
 		
 	def close(self: Self) -> NoneType:
 		pass

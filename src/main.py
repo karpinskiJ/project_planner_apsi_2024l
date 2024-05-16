@@ -189,13 +189,14 @@ def project(request: Request, name: Annotated[str | NoneType, Form()] = None,
 	user = checkToken(token)
 	if isinstance(user, Answer):
 		return user.toHTML(request)
+	user = User(user)
+	if item is None and not user.canEditProject():
+		return CannotCreateAnswer("project").toHTML(request)
 	inputModel = inpute.Project([name, description, datetime.datetime.strptime(start_date, "%Y-%m-%d"), 
 			datetime.datetime.strptime(end_date, "%Y-%m-%d"), status])
 	if inputModel is None:
 		return LackOfFieldsAnswer("project", item).toHTML(request)
-	wrap = wraps.Project(inputModel)
-	user = User(user)
-	if not user.canEditProject(wrap):
+	if item is not None and not user.canEditProject(wraps.Project(item)):
 		return CannotChangeAnswer("project", item).toHTML(request)
 	if item is None:
 		inputModel.owner = user
@@ -208,11 +209,13 @@ def resource(request: Request, name: Annotated[str | NoneType, Form()] = None,
 	user = checkToken(token)
 	if isinstance(user, Answer):
 		return user.toHTML(request)
+	user = User(user)
+	if item is None and not user.canEditResource():
+		return CannotCreateAnswer("resource").toHTML(request)
 	inputModel = inpute.Resource([name])
-	wrap = wraps.Resource(inputModel)
 	if inputModel is None:
 		return LackOfFieldsAnswer("resource", item).toHTML(request)
-	if not User(user).canEditResource(wrap):
+	if item is not None and not user.canEditResource(wraps.Resource(item)):
 		return CannotChangeAnswer("resource", item).toHTML(request)
 	return edited("resource", inputModel, item).toHTML(request)
 	
