@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Advanced</title>
+	<link rel="stylesheet" href="dashboard_style.css">
+	<link rel="stylesheet" href="navigation.css">
+</head>
+<body>
+{% include "navigation.html" %}
+<div class="presentation">
+{% include "headers.html" %}
+<a href="/delete?kind=user"><button>Delete my account</button></a>
+<a href="/edit?kind=user&advanced=true"><button>Change credentials</button></a>
+</div>
+</body>
+</html>

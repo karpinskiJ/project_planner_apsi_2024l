@@ -1,0 +1,11 @@
+<label>Name:&nbsp;</label><label class="value">{{item.name}}</label><br/>
+<label>Description:&nbsp;</label><label class="value">{{item.description}}</label><br/>
+<label>Start date:&nbsp;</label><label class="value">{{item.start_date}}</label><br/>
+<label>End date:&nbsp;</label><label class="value">{{item.end_date}}</label><br/>
+<label>Status:&nbsp;</label><label class="value">{{item.status}}</label><br/>
+{% if joinProjectOption %}
+<a href="/joinProject?name={{item.name}}">
+<button onClick=>Join project</button>
+</a>
+{% endif %}
+

@@ -5,3 +5,6 @@ uvicorn
 Jinja2
 python-multipart
 psycopg2
+passlib
+pyjwt
+favicon

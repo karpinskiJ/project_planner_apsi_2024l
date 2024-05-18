@@ -3,10 +3,30 @@
 <head>
     <title>{{title}}</title>
     <link rel="stylesheet" href="the_style.css">
+    <link rel="stylesheet" href="navigation.css">
+    <link rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
+{% if logged %}
+{% include "navigation.html" %}
+{% endif %}
 <div class="container">
-	<center><label>{{message}}</label></center>
+	<center>
+	{% if error %}
+	<i class="fa fa-exclamation"></i>
+	{% else %}
+	<i class="fa fa-check"></i>
+	{% endif %}
+	<br/>
+	<label>{{message}}</label>
+	{% if not logged %}
+	<br/>
+	<a href="/">
+	<button>Return</button>
+	</a>
+	{% endif %}
+	</center>
 </div>
 </body>
 </html>

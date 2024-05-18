@@ -1,0 +1,8 @@
+<label>Login:&nbsp;</label><label class="value">{{item.login}}</label><br/>
+<label>Name:&nbsp;</label><label class="value">{{item.name}}</label><br/>
+<label>Surname:&nbsp;</label><label class="value">{{item.surname}}</label><br/>
+<label>Role:&nbsp; </label><label class="value">{{item.role}}</label><br/>
+{% if showProjectsOption %}
+<label>Projects:&nbsp;</label><label class="value">
+<a href="/lookOne?kind=projects&item={{item.login}}">show</a></label>
+{% endif %}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="the_style.css">
+    <link rel="stylesheet" href="navigation.css">
+</head>
+<body>
+{% if logged %}
+{% include "navigation.html" %}
+{% endif %}
+<div class="container">
+	{% include "headers.html" %}
+    <form method="post" action="{{target}}">
+		{% for resource in liste %}
+			<div class="form-group">
+				<input type="checkbox" class="form-control" 
+					id="{{field.name}}" name="{{field.name}}"
+					{% if resource.onwed %}
+					checked
+					{% endif %} />
+				<label for="{{resource.name}}">&nbsp;{{resource.name}}</label>
+			</div>
+		{% endfor %}
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" value="Compose" />
+        </div>
+    </form>
+</div>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

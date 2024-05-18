@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="the_style.css">
+    <link rel="stylesheet" href="navigation.css">
+</head>
+<body>
+{% include "navigation.html" %}
+<div class="presentation">
+{% include "headers.html" %}
+{% for item in liste %}
+<a href="{{item.link}}">{{item.text}}</a><br/>
+{% endfor %}
+{% include "buttons.html" %}
+</div>
+</body>
+</html>
