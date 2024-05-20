@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - Project Planner</title>
+    <title>Register - Project Planner</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="the_style.css">
 </head>
 <body>
 <div class="container">
-    <h1>Login into project planner</h1>
-    <h2>Enter your login credentials</h2>
-    <form method="post" action="/logged">
+    <h1>Register into Project Planner</h1>
+    <h2>Select your login credentials</h2>
+    <form method="post" action="/registered">
         <div class="form-group">
             <label for="login">Login:</label>
             <input type="text" class="form-control" id="login" name="login" required>
@@ -18,7 +19,26 @@
             <input type="password" class="form-control" id="password" name="password" required>
         </div>
         <div class="form-group">
-            <input type="submit" class="btn btn-primary" value="Login">
+            <label for="repeatedPassword">Repeated password:</label>
+            <input type="password" class="form-control" id="repeatedPassword" name="repeatedPassword" required>
+        </div>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="surname">Surname:</label>
+            <input type="text" class="form-control" id="surname" name="surname" required>
+        </div>
+        <div class="form-group">
+            <label for="role">Role:</label>
+            <input type="text" class="form-control" id="role" name="role" required>
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" value="Register">
+        </div>
+        <div class="form-group">
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Return</button>
         </div>
     </form>
 </div>

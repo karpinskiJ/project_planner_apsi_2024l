@@ -1,21 +1,40 @@
 .sidenav {
-	height: 200px;
-	width: 200px;
-	top: 0;
-	left: 0;
-	position: fixed;
-	z-index: 1;
-	background-color: red;
+    height: 100%; /* Extend to full height */
+    width: 200px;
+    top: 0;
+    left: 0;
+    position: fixed;
+    z-index: 1;
+    background-color: #1b263b; /* Dark blue background */
+    color: #e0e1dd; /* Light text color */
+    padding-top: 20px;
+}
+
+.sidenav a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #e0e1dd;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.sidenav a:hover {
+    color: #ff6f61;
 }
 
 .presentation {
-	height: 200px;
-	width: 200px;
-	top: 0;
-	left: 300px;
-	position: fixed;
+    height: auto; 
+    width: calc(100% - 220px); 
+    top: 0;
+    left: 220px; 
+    position: fixed;
+    padding: 20px;
+    background-color: rgba(27, 38, 59, 0.95);
+    color: #e0e1dd;
+    overflow-y: auto;
 }
 
 .value {
-	color: green;
+    color: #e0e1dd; 
 }
