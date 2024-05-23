@@ -1,48 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register - Project Planner</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="the_style.css">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="dashboard_style.css">
+    <link rel="stylesheet" href="navigation.css">
 </head>
 <body>
-<div class="container">
-    <h1>Register into Project Planner</h1>
-    <h2>Select your login credentials</h2>
-    <form method="post" action="/registered">
+{% include "navigation.html" %}
+<div class="main-content">
+    <div class="presentation">
+        {% include "headers.html" %}
         <div class="form-group">
-            <label for="login">Login:</label>
-            <input type="text" class="form-control" id="login" name="login" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+            {% for field in fields %}
+                <label>{{field.label}}:&nbsp;</label><label class="value">{{field.text}}</label><br/>
+            {% endfor %}
         </div>
         <div class="form-group">
-            <label for="repeatedPassword">Repeated password:</label>
-            <input type="password" class="form-control" id="repeatedPassword" name="repeatedPassword" required>
+            {% for link in links %}
+                <label>{{link.label}}:&nbsp;</label><a href="{{link.link}}"><label class="value">{{link.text}}</label></a><br/>
+            {% endfor %}
         </div>
-        <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" class="form-control" id="name" name="name" required>
-        </div>
-        <div class="form-group">
-            <label for="surname">Surname:</label>
-            <input type="text" class="form-control" id="surname" name="surname" required>
-        </div>
-        <div class="form-group">
-            <label for="role">Role:</label>
-            <input type="text" class="form-control" id="role" name="role" required>
-        </div>
-        <div class="form-group">
-            <input type="submit" class="btn btn-primary" value="Register">
-        </div>
-        <div class="form-group text-center">
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Return</button>
-        </div>
-    </form>
+        {% include "buttons.html" %}
+    </div>
 </div>
-
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

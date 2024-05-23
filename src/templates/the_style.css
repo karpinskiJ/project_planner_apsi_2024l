@@ -20,7 +20,7 @@ body::before {
     background: radial-gradient(circle at top left, rgba(255,0,150,0.3), transparent 70%),
                 radial-gradient(circle at bottom right, rgba(255,0,0,0.3), transparent 70%);
     animation: moveBackground 2s infinite alternate;
-    z-index: 0;
+    z-index: -1;
 }
 
 @keyframes moveBackground {
@@ -32,104 +32,115 @@ body::before {
     }
 }
 
-.container {
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-width: 500px;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
     position: relative;
     z-index: 1;
-    background-color: rgba(27, 38, 59, 0.95);
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
-    text-align: center;
-    max-width: 400px;
-    width: 90%; /* Adjust width to make it responsive */
-    margin: auto; /* Center the container */
-    overflow: auto; /* Allow scrolling if content overflows */
 }
 
-h1, h2 {
-    font-size: 1.5em; /* Adjust font size for smaller screens */
+.container {
+    max-width: 800px;
+    min-width: 500px;
+    width: 100%;
+    padding: 20px;
+    background-color: rgba(27, 38, 59, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+}
+
+.presentation {
+    padding: 30px;
+    min-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+    height: auto;
+    color: #ffffff;
+}
+
+h2 {
+    font-size: 1.5em;
     margin-bottom: 20px;
     color: #ffffff;
 }
 
-label {
-    display: block;
+h3 {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+label, .value {
+    display: inline-block;
     margin-bottom: 10px;
-    color: #e0e1dd;
-    font-size: 1em; /* Keep label font size */
+    font-size: 1em;
+    color: #ffffff;
 }
 
 .value {
     font-weight: bold;
-    color: #ffffff;
+    color: #e0e1dd;
 }
 
-.form-group label {
-    color: #e0e1dd;
-    font-size: 1em; /* Keep form label font size */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .form-control {
-    background-color: #0d1b2a;
-    color: #e0e1dd;
-    border: 1px solid #415a77;
-    padding: 10px; /* Decrease padding for smaller input fields */
-    font-size: 1.1em; /* Slightly larger font size for readability */
-}
-
-.form-control:focus {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px 0;
     background-color: #1b263b;
-    color: #e0e1dd;
+    color: #ffffff;
+    border: 1px solid #415a77;
 }
 
-.btn-primary {
+.btn-custom {
     background-color: #415a77;
     color: #e0e1dd;
     border: none;
-    padding: 10px 20px; /* Decrease padding for smaller buttons */
-    margin: 10px;
-    border-radius: 5px;
+    padding: 10px 30px;
+    border-radius: 25px;
     cursor: pointer;
-    font-size: 14px; /* Decrease font size for buttons */
+    font-size: 16px;
+    text-decoration: none;
     transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+    margin: 10px 0;
 }
 
-.btn-primary:hover {
+.btn-custom:hover {
     background-color: #556e8c;
     transform: scale(1.05);
 }
 
 .btn-secondary {
-    background-color: #c94f4f; /* Different color for return button */
+    background-color: #a83232;
     color: #e0e1dd;
     border: none;
-    padding: 8px 16px; /* Smaller padding for return button */
+    padding: 8px 16px;
     margin: 10px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 12px; /* Smaller font size for return button */
+    font-size: 14px;
+    text-align: center;
+    display: block;
+    width: 100%;
+    text-decoration: none;
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn-secondary:hover {
     background-color: #c94f4f;
     transform: scale(1.05);
-}
-
-button:focus, .btn-primary:focus, .btn-secondary:focus {
-    outline: none;
-}
-
-.text-center {
-    text-align: center;
-}
-
-a {
-    color: #e0e1dd;
-    text-decoration: underline;
-    transition: color 0.3s ease;
-}
-
-a:hover {
-    color: #ff6f61;
 }

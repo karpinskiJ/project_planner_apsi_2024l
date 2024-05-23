@@ -1,28 +1,106 @@
 @import url("https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css");
 
 body {
-	background-color: #f8f9fa;
-	font-family: Arial, sans-serif;
+    background-color: #0d1b2a;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
 }
-.container {
-	max-width: 400px;
-	position: fixed;
-	left: 20px;
-	top: 20px;
-	padding: 20px;
-	background-color: #fff;
-	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top left, rgba(255,0,150,0.3), transparent 70%),
+                radial-gradient(circle at bottom right, rgba(255,0,0,0.3), transparent 70%);
+    animation: moveBackground 2s infinite alternate;
+    z-index: -1; /* Ustawienie tła za wszystkimi innymi elementami */
 }
-form {
-	margin-top: 20px;
+
+@keyframes moveBackground {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 100%;
+    }
 }
-label {
-	font-weight: bold;
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Minimum height to 100vh to center vertically */
+    width: calc(100% - 200px); /* Uwzględnij szerokość paska bocznego */
+    margin-left: 200px; /* Przestrzeń na pasek boczny */
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1; /* Ustawienie nad tłem */
 }
+
+.presentation {
+    background-color: rgba(27, 38, 59, 0.95);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    max-width: 600px;
+    min-width: 500px;
+    width: auto; /* Automatyczna szerokość */
+    height: auto; /* Automatyczna wysokość */
+    margin: 0 auto; /* Centrowanie poziome */
+    color: #ffffff; /* Kolor tekstu na biały */
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.label, .value {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.value {
+    font-weight: bold;
+    color: #e0e1dd;
+}
+
 .form-group {
-	margin-bottom: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
-.btn-primary {
-	width: 100%;
+
+/* Custom Button Styles */
+.btn-custom {
+    background-color: #415a77;
+    color: #e0e1dd;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 25px; /* More rounded corners */
+    cursor: pointer;
+    font-size: 16px; /* Larger font size */
+    text-decoration: none; /* Remove underline from links */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+    margin: 10px 0; /* Add margin to separate buttons */
+}
+
+.btn-custom:hover {
+    background-color: #556e8c;
+    transform: scale(1.05);
 }

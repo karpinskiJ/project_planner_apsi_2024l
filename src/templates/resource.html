@@ -1,1 +1,25 @@
-<label>Name:&nbsp;</label><label class="value">{{item.name}}</label><br/>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resources</title>
+    <link rel="stylesheet" href="dashboard_style.css">
+    <link rel="stylesheet" href="navigation.css">
+</head>
+<body>
+{% include "navigation.html" %}
+<div class="main-content">
+    <div class="presentation">
+        <h2>Resource Details</h2>
+        <div class="resource-details">
+            <div class="form-group">
+                <label>Name:&nbsp;</label><label class="value">{{item.name}}</label>
+            </div>
+            <div class="form-group text-center">
+                <button type="button" class="btn btn-custom" onclick="window.location.href='/'">Return</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
