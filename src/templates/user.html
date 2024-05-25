@@ -1,8 +1,42 @@
-<label>Login:&nbsp;</label><label class="value">{{item.login}}</label><br/>
-<label>Name:&nbsp;</label><label class="value">{{item.name}}</label><br/>
-<label>Surname:&nbsp;</label><label class="value">{{item.surname}}</label><br/>
-<label>Role:&nbsp; </label><label class="value">{{item.role}}</label><br/>
-{% if showProjectsOption %}
-<label>Projects:&nbsp;</label><label class="value">
-<a href="/lookOne?kind=projects&item={{item.login}}">show</a></label>
-{% endif %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Details - Project Planner</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="the_style.css">
+</head>
+<body>
+{% include "navigation.html" %}
+<div class="main-content">
+    <div class="container">
+        <div class="presentation">
+            <h2>User Details</h2>
+            <div class="user-details">
+                <div class="form-group">
+                    <label>Login:&nbsp;</label><span class="value">{{item.login}}</span>
+                </div>
+                <div class="form-group">
+                    <label>Name:&nbsp;</label><span class="value">{{item.name}}</span>
+                </div>
+                <div class="form-group">
+                    <label>Surname:&nbsp;</label><span class="value">{{item.surname}}</span>
+                </div>
+                <div class="form-group">
+                    <label>Role:&nbsp;</label><span class="value">{{item.role}}</span>
+                </div>
+                {% if showProjectsOption %}
+                <div class="form-group">
+                    <label>Projects:&nbsp;</label><span class="value"><a href="/lookOne?kind=projects&item={{item.login}}">show</a></span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="form-group text-center">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Return</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

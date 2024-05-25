@@ -1,11 +1,39 @@
-<label>Name:&nbsp;</label><label class="value">{{item.name}}</label><br/>
-<label>Description:&nbsp;</label><label class="value">{{item.description}}</label><br/>
-<label>Start date:&nbsp;</label><label class="value">{{item.start_date}}</label><br/>
-<label>End date:&nbsp;</label><label class="value">{{item.end_date}}</label><br/>
-<label>Status:&nbsp;</label><label class="value">{{item.status}}</label><br/>
-{% if joinProjectOption %}
-<a href="/joinProject?name={{item.name}}">
-<button onClick=>Join project</button>
-</a>
-{% endif %}
-
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Details</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="the_style.css">
+</head>
+<body>
+{% include "navigation.html" %}
+<div class="main-content">
+    <div class="presentation">
+        <h2>Project Details</h2>
+        <div class="project-details">
+            <div class="form-group">
+                <label>Name:&nbsp;</label><label class="value">{{item.name}}</label>
+            </div>
+            <div class="form-group">
+                <label>Description:&nbsp;</label><label class="value">{{item.description}}</label>
+            </div>
+            <div class="form-group">
+                <label>Start date:&nbsp;</label><label class="value">{{item.start_date}}</label>
+            </div>
+            <div class="form-group">
+                <label>End date:&nbsp;</label><label class="value">{{item.end_date}}</label>
+            </div>
+            <div class="form-group">
+                <label>Status:&nbsp;</label><label class="value">{{item.status}}</label>
+            </div>
+            {% if joinProjectOption %}
+            <div class="form-group text-center">
+                <a href="/joinProject?name={{item.name}}" class="btn-custom">Join Project</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

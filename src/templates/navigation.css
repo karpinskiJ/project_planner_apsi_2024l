@@ -1,21 +1,85 @@
 .sidenav {
-	height: 200px;
-	width: 200px;
-	top: 0;
-	left: 0;
-	position: fixed;
-	z-index: 1;
-	background-color: red;
+    height: 100%;
+    width: 200px;
+    top: 0;
+    left: 0; /* Pasek boczny po lewej stronie */
+    position: fixed;
+    z-index: 1;
+    background-color: #1b263b;
+    color: #e0e1dd;
+    padding-top: 20px;
+}
+
+.sidenav a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #e0e1dd;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+.sidenav a:hover {
+    color: #ff6f61;
+}
+
+.presentation-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Minimum height to 100vh to center vertically */
+    width: calc(100% - 200px); /* Adjust width to account for the sidenav */
+    margin-left: 200px; /* Margin to leave space for the sidenav */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    position: relative;
 }
 
 .presentation {
-	height: 200px;
-	width: 200px;
-	top: 0;
-	left: 300px;
-	position: fixed;
+    background-color: rgba(27, 38, 59, 0.95);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    max-width: 600px;
+    width: auto; /* Auto width */
+    height: auto; /* Auto height */
+    margin: 0 auto; /* Center horizontally */
+    color: #ffffff; /* White text color */
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.label, .value {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 1em;
 }
 
 .value {
-	color: green;
+    font-weight: bold;
+    color: #e0e1dd;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background-color: #415a77;
+    color: #e0e1dd;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #556e8c;
+    transform: scale(1.05);
 }

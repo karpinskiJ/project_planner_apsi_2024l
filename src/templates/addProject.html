@@ -1,40 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add project</title>
-	<link rel="stylesheet" href="the_style.css">
+    <title>Add Project</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="the_style.css">
 </head>
 <body>
-<div class="container">
-    <h1>Add project</h1>
-    <h2>It will be your project</h2>
-    <form method="post" action="/addedProject">
-        <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+{% include "navigation.html" %}
+<div class="main-content">
+    <div class="container dark-container">
+        <div class="presentation">
+            <h2>Add Project</h2>
+            <h3>It will be your project</h3>
+            <form method="post" action="/addedProject">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <input type="text" class="form-control" id="description" name="description" required>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start date:</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End date:</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Status:</label>
+                    <input type="text" class="form-control" id="status" name="status" required>
+                </div>
+                <div class="form-group text-center">
+                    <input type="submit" class="btn btn-custom" value="Add Project">
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="description">Description:</label>
-            <input type="text" class="form-control" id="description" name="description" required>
-        </div>
-        <div class="form-group">
-            <label for="start_date">Start date:</label>
-            <input type="date" class="form-control" id="start_date" name="start_date" required>
-        </div>
-        <div class="form-group">
-            <label for="end_date">End date:</label>
-            <input type="date" class="form-control" id="end_date" name="end_date" required>
-        </div>
-        <div class="form-group">
-            <label for="status">Status:</label>
-            <input type="text" class="form-control" id="status" name="status" required>
-        </div>
-        <div class="form-group">
-            <input type="submit" class="btn btn-primary" value="Add">
-        </div>
-    </form>
+    </div>
 </div>
-
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
