@@ -2,12 +2,13 @@
     height: 100%;
     width: 200px;
     top: 0;
-    left: 0; /* Pasek boczny po lewej stronie */
+    left: 0;
     position: fixed;
     z-index: 1;
     background-color: #1b263b;
     color: #e0e1dd;
     padding-top: 20px;
+    overflow-y: auto; /* Allow vertical scrolling */
 }
 
 .sidenav a {
@@ -23,15 +24,26 @@
     color: #ff6f61;
 }
 
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: calc(100% - 200px);
+    margin-left: 200px;
+    box-sizing: border-box;
+    position: relative;
+    overflow-y: auto; /* Allow vertical scrolling */
+}
+
 .presentation-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Minimum height to 100vh to center vertically */
-    width: calc(100% - 200px); /* Adjust width to account for the sidenav */
-    margin-left: 200px; /* Margin to leave space for the sidenav */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    
 }
 
 .presentation {
@@ -41,10 +53,10 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
     text-align: center;
     max-width: 600px;
-    width: auto; /* Auto width */
-    height: auto; /* Auto height */
-    margin: 0 auto; /* Center horizontally */
-    color: #ffffff; /* White text color */
+    width: 100%;
+    margin: 0 auto;
+    color: #ffffff;
+    overflow-y: auto;
 }
 
 h2 {
@@ -83,3 +95,4 @@ h2 {
     background-color: #556e8c;
     transform: scale(1.05);
 }
+

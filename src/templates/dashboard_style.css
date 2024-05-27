@@ -22,7 +22,7 @@ body::before {
     background: radial-gradient(circle at top left, rgba(255,0,150,0.3), transparent 70%),
                 radial-gradient(circle at bottom right, rgba(255,0,0,0.3), transparent 70%);
     animation: moveBackground 2s infinite alternate;
-    z-index: -1; /* Ustawienie tła za wszystkimi innymi elementami */
+    z-index: -1; 
 }
 
 @keyframes moveBackground {
@@ -43,6 +43,7 @@ body::before {
     margin-left: 200px; /* Przestrzeń na pasek boczny */
     box-sizing: border-box;
     position: relative;
+    overflow-y: auto;
     z-index: 1; /* Ustawienie nad tłem */
 }
 
@@ -58,6 +59,7 @@ body::before {
     height: auto; /* Automatyczna wysokość */
     margin: 0 auto; /* Centrowanie poziome */
     color: #ffffff; /* Kolor tekstu na biały */
+    overflow-y: auto;
 }
 
 h2 {
@@ -83,6 +85,7 @@ h2 {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    
 }
 
 /* Custom Button Styles */
