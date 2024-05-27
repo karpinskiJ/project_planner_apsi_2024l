@@ -38,13 +38,13 @@ body::before {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Minimum height to 100vh to center vertically */
-    width: calc(100% - 200px); /* Uwzględnij szerokość paska bocznego */
-    margin-left: 200px; /* Przestrzeń na pasek boczny */
+    min-height: 100vh; 
+    width: calc(100% - 200px); 
+    margin-left: 200px; 
     box-sizing: border-box;
     position: relative;
     overflow-y: auto;
-    z-index: 1; /* Ustawienie nad tłem */
+    z-index: 1; 
 }
 
 .presentation {
@@ -55,10 +55,10 @@ body::before {
     text-align: center;
     max-width: 600px;
     min-width: 500px;
-    width: auto; /* Automatyczna szerokość */
-    height: auto; /* Automatyczna wysokość */
-    margin: 0 auto; /* Centrowanie poziome */
-    color: #ffffff; /* Kolor tekstu na biały */
+    width: auto; 
+    height: auto; 
+    margin: 0 auto; 
+    color: #ffffff; 
     overflow-y: auto;
 }
 
@@ -88,19 +88,18 @@ h2 {
     
 }
 
-/* Custom Button Styles */
 .btn-custom {
     background-color: #415a77;
     color: #e0e1dd;
     border: none;
     padding: 10px 30px;
-    border-radius: 25px; /* More rounded corners */
+    border-radius: 25px; 
     cursor: pointer;
-    font-size: 16px; /* Larger font size */
-    text-decoration: none; /* Remove underline from links */
+    font-size: 16px; 
+    text-decoration: none; 
     transition: background-color 0.3s ease, transform 0.3s ease;
     display: inline-block;
-    margin: 10px 0; /* Add margin to separate buttons */
+    margin: 10px 0; 
 }
 
 .btn-custom:hover {

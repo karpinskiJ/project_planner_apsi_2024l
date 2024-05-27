@@ -1,4 +1,3 @@
-/* the_style.css */
 body {
     font-family: Arial, sans-serif;
     height: 100vh;
@@ -45,14 +44,14 @@ body::before {
     max-width: 800px;
     min-width: 500px;
     width: 100%;
-    height: auto; /* Added to ensure container height fits within viewport */
+    height: auto; 
     max-height: 80%;
     padding: 20px;
     background-color: rgba(27, 38, 59, 0.95);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
     text-align: center;
-    overflow-y: auto; /* Ensure scroll if content overflows */
+    overflow-y: auto; 
 }
 
 .action-form {
@@ -91,7 +90,7 @@ form button:hover {
 h1 {
     font-size: 2em;
     margin-bottom: 20px;
-    color: #ffffff; /* This will make the text white */
+    color: #ffffff; 
 }
 
 h2 {
