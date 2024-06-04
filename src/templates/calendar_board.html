@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Timeline</title>
+    <link rel="stylesheet" href="styles_calendar_board.css">
+</head>
+<body>
+<div class="timeline-container">
+    <div class="controls">
+        <button onclick="previousMonth()">Previous</button>
+        <span id="current-month">January</span>
+        <button onclick="nextMonth()">Next</button>
+    </div>
+    <table id="timeline-table">
+        <thead>
+        <tr>
+            <th>User</th>
+            <!-- Days will be populated by JavaScript -->
+        </tr>
+        </thead>
+        <tbody id="timeline-body">
+        <!-- Rows will be populated by JavaScript -->
+        </tbody>
+    </table>
+    <div class="legend" id="legend">
+        <!-- Legend items will be populated by JavaScript -->
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+
+  const projects = {{ projects|safe }}
+
+  
+
+
+
+</script>
+<script src='script_calendar_board.js' type="text/javascript"></script>
+
+
+</body>
+</html>
