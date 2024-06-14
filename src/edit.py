@@ -21,7 +21,7 @@ def edited(kind: str, model: InputModel, item: str | NoneType = None,
 			admin = True
 	General().edit(model, General.make(kind, item) if item else None)
 	if kind == "project" and not item:
-		user.project = wraps.Project(model)
+		user.addProject(wraps.Project(model))
 	if admin:
 		User(model).makeAdmin()
 	newToken = ( authHandler.encodeToken(model.login) if

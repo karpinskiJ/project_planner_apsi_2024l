@@ -40,7 +40,6 @@ def register(request: Request, token: Annotated[str | NoneType, Cookie()] = None
     return ToEditAnswer("user", empty.User().acceptVisitor(ToEditVisitor)).toHTML(request, False)
 
 
-@app.post('/delete', response_class=HTMLResponse)
 @app.get('/delete', response_class=HTMLResponse)
 def delete(request: Request, kind: Annotated[str | NoneType, Query()] = None,
            item: Annotated[str | NoneType, Query()] = None,
@@ -144,7 +143,7 @@ def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
     return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor,
                                                  advanced=advanced), item, advanced=advanced).toHTML(request)
 
-
+# to change
 @app.get('/compose', response_class=HTMLResponse)
 def compose(request: Request, item: Annotated[str, Query()] = None,
             compose: Annotated[bool, Query()] = True,
@@ -277,19 +276,19 @@ def join(request: Request, join: Annotated[bool, Query()] = True,
     if not wrap.exists:
         return ItemNotExistsAnswer("project", name).toHTML(request)
     if join:
-        if user.project == wrap:
+        if user.inProject(wrap):
             return AlreadyInProjectAnswer(name).toHTML(request)
         elif user.canJoinProject(wrap):
-            user.project = wrap
+            user.addProject(wrap)
         else:
             return CannotJoinProjectAnswer(name).toHTML(request)
     else:
         if wrap.owner == user:
             return RedirectResponse('/delete?kind=project&item=' + name)
-        if wrap != user.project:
+        if not user.inProject(wrap):
             return NotInProjectAnswer(name).toHTML(request)
         else:
-            user.project = None
+            user.releaseProject(wrap)
     return RedirectResponse('/dashboard?kind=project')
 
 
