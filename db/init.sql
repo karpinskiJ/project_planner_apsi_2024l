@@ -48,16 +48,25 @@ VALUES
 
 
 
-
+CREATE TYPE resource_type as ENUM('it_equipment','vehicle','office_equipment','other');
 CREATE TABLE technical_resources(
     id serial  NOT NULL,
     name VARCHAR(100) NOT NULL,
     manager_id integer,
---    TO DO ADD MORE FIELDS
+    type resource_type NOT NULL,
     CONSTRAINT pk_technical_resources PRIMARY KEY (id)                 ,
     CONSTRAINT fk_user_id FOREIGN KEY (manager_id) REFERENCES users ("id")
 );
-INSERT INTO technical_resources (name,manager_id) VALUES ('car',1),('laptop',1),('screen',1) ;
+INSERT INTO technical_resources (name,manager_id,type) VALUES
+ ('car',1,'vehicle'),
+ ('laptop',1,'it_equipment'),
+ ('screen',1,'it_equipment'),
+ ('printer',1,'it_equipment'),
+ ('desk',1,'office_equipment'),
+ ('chair',1,'office_equipment'),
+ ('table',2,'office_equipment'),
+ ('phone',1,'office_equipment'),
+ ('other',2,'other') ;
 
 create table projects_to_resources_lkp(
     id serial NOT NULL,

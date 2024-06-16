@@ -2,17 +2,28 @@
 <html>
 <head>
     <title>{{title}}</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="the_style.css">
     <link rel="stylesheet" href="navigation.css">
 </head>
 <body>
 {% include "navigation.html" %}
-<div class="presentation">
-{% include "headers.html" %}
-{% for item in liste %}
-<a href="{{item.link}}">{{item.text}}</a><br/>
-{% endfor %}
-{% include "buttons.html" %}
+<div class="container my-5">
+    <div class="presentation card p-4 shadow-lg">
+        {% include "headers.html" %}
+        <div class="list-group">
+            {% for item in liste %}
+            <a href="{{item.link}}" class="list-group-item list-group-item-action">{{item.text}}</a>
+            {% endfor %}
+        </div>
+        <div class="mt-4 text-center">
+            {% include "buttons.html" %}
+        </div>
+    </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

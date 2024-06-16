@@ -11,6 +11,13 @@ class ProjectRole(Enum):
     admin = 'admin'
 
 
+class ResourceType(Enum):
+    it_equipment = 'it_equipment'
+    vehicle = 'vehicle'
+    office_equipment = 'office_equipment'
+    other = 'other'
+
+
 class ProjectStatus(Enum):
     PENDING = 'pending'
     IN_PROGRESS = 'in_progress'
@@ -59,6 +66,7 @@ class TechnicalResources(SQLModel, table=True):
     id: Optional[int] = Field(primary_key=True)
     manager_id: int
     name: str = Field(max_length=100)
+    type: ResourceType = Column(ENUM(ResourceType))
 
     def __getattr__(self: Self, attr: str) -> Any:
         if attr == "uniqueName":
