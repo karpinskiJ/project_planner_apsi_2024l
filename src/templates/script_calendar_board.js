@@ -1,13 +1,9 @@
-
-
-
-
 const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
 ];
 
-let currentMonthIndex = 0;
+let currentMonthIndex = new Date().getMonth(); // Start with the current month
 
 // Generate a random color for each project
 const projectColors = {};
@@ -21,7 +17,7 @@ function getRandomColor() {
     return color;
 }
 
-function createTimelineTable(projects_var) {
+function createTimelineTable(projects) {
     const currentMonth = monthNames[currentMonthIndex];
     const daysInMonth = new Date(2024, currentMonthIndex + 1, 0).getDate();
     const thead = document.querySelector('#timeline-table thead tr');
@@ -41,7 +37,7 @@ function createTimelineTable(projects_var) {
     }
 
     // Populate rows
-    projects_var.forEach((project) => {
+    projects.forEach((project) => {
         const row = document.createElement('tr');
         const userCell = document.createElement('td');
         userCell.textContent = project.user;
@@ -121,15 +117,15 @@ function hideInfo(event) {
 function previousMonth() {
     if (currentMonthIndex > 0) {
         currentMonthIndex--;
-        createTimelineTable();
+        createTimelineTable(projects);
     }
 }
 
 function nextMonth() {
     if (currentMonthIndex < 11) {
         currentMonthIndex++;
-        createTimelineTable();
+        createTimelineTable(projects);
     }
 }
 
-document.addEventListener('DOMContentLoaded', createTimelineTable(projects));
+document.addEventListener('DOMContentLoaded', () => createTimelineTable(projects));

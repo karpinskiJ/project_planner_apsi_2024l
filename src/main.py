@@ -17,6 +17,10 @@ from myToken import *
 from types import NoneType
 import empty
 from visitors import ToEditVisitor
+import sqlmodel
+from services import *
+import sqlModels as sql
+import numpy as np
 
 
 @app.get('/', response_class=Response)
@@ -142,6 +146,7 @@ def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
             return CannotChangeAnswer(kind, item).toHTML(request)
     return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor,
                                                  advanced=advanced), item, advanced=advanced).toHTML(request)
+
 
 # to change
 @app.get('/compose', response_class=HTMLResponse)
@@ -304,32 +309,43 @@ def dashboard(request: Request, kind: Annotated[str | NoneType, Query()] = None,
         return lookInternal("project", "user", True, user).toHTML(request)
 
 
-@app.get('/calendar', response_class=HTMLResponse)
+@app.get('/calendar-manager-view', response_class=HTMLResponse)
 def dashboard(request: Request, kind: Annotated[str | NoneType, Query()] = None,
               token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-    projects = [
+    user = checkToken(token)
+    with sqlmodel.Session(get_engine()) as session:
 
-        {
-            "user": "Bob",
-            "assignments": [
-                {"project": 'Project C', "start": '2024-01-10', "end": '2024-01-20', "info": 'Details about Project C',
-                 "allocation_part": '60%'},
-                {"project": 'Project D', "start": '2024-01-15', "end": '2024-01-25', "info": 'Details about Project D',
-                 "allocation_part": '40%'},
-            ]
-        },
-        {
-            "user": 'Charlie',
-            "assignments": [
-                {"project": 'Project E', "start": '2024-01-15', "end": '2024-01-25', "info": 'Details about Project E',
-                 "allocation_part": '70%'},
-            ]
-        }
-    ]
+        manager_id = session.query(sql.Users).where(sql.Users.login==user).first().id
+
+        query_people = f"""
+                   SELECT users.login, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
+                     FROM users 
+                        INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                        INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                    WHERE users.manager_id = '{manager_id}'
+        """
+        query_stuff = f"""
+                   SELECT technical_resources.name, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
+                     FROM  technical_resources
+                     INNER JOIN projects_to_resources_lkp ON technical_resources.id = projects_to_resources_lkp.resource_id 
+                        INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                    WHERE technical_resources.manager_id = '{manager_id}'
+        """
+        data_people = session.exec(query_people).all()
+        data_stuff = session.exec(query_stuff).all()
+    data = data_people + data_stuff
+    employess = list(set([row[0] for row in data]))
+    output = [{"user": employee, "assignments": []} for employee in employess]
+    for row in data:
+        for employee in output:
+            if employee['user'] == row[0]:
+                employee['assignments'].append(
+                    {"project": row[1], "start": row[3].isoformat(), "end": row[4].isoformat(), "info": row[5],
+                     "allocation_part": f"{row[2] * 100}%   "})
 
     response = templates.TemplateResponse('calendar_board.html'
                                           , {'request': request,
-                                             'projects': json.dumps(projects)
+                                             'projects': json.dumps(output)
                                              }
                                           )
     return response

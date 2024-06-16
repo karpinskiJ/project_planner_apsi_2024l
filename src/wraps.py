@@ -55,7 +55,7 @@ class General:
 				.where(elemental.modelType(kind).id == ide)
 				))
 				
-	def init(self: Self, session: session.AbstractSession | NoneType = None):
+	def init(self: Self, session: AbstractSession | NoneType = None):
 		self.session = session
 		
 	def __ne__(self: Self, another: Self) -> bool:
@@ -127,8 +127,8 @@ class User(General):
 		if parent:
 			parent = parent.id
 		with self.subsession as subsession:
-			subsession.add(sql.System_Admins(id = self.id, parent_id = parent,
-				promotion_time = datetime.datetime.now()))
+			subsession.add(sql.SystemAdmins(id = self.id, parent_id = parent,
+                                            promotion_time = datetime.datetime.now()))
 			
 	def inherits(self: Self, another: Self) -> bool:
 		anch = another.id
@@ -136,7 +136,7 @@ class User(General):
 		with self.subsession as subsession:
 			while sub is not None:
 				sub = subsession(Query(
-					select(sql.System_Admins.parent_id).where(sql.System_Admins.id == sub)
+					select(sql.SystemAdmins.parent_id).where(sql.SystemAdmins.id == sub)
 					))
 				if sub == anch:
 					return True
@@ -202,7 +202,7 @@ class User(General):
 				child.parent = parent
 		with self.subsession as subsession:
 			admin = subsession(Query(
-				select(sql.System_Admins).where(sql.System_Admins.id == self.id)
+				select(sql.SystemAdmins).where(sql.SystemAdmins.id == self.id)
 				))
 			subsession.add(admin, toDelete = True)
 		
@@ -212,7 +212,7 @@ class User(General):
 		elif attr == "admin":
 			with self.subsession as subsession:
 				return subsession(Query(
-					select(sql.System_Admins.id).where(sql.System_Admins.id == self.id)
+					select(sql.SystemAdmins.id).where(sql.SystemAdmins.id == self.id)
 					)) is not None
 	
 		elif attr == "parent":
@@ -220,7 +220,7 @@ class User(General):
 				raise AttributeError(attr, self.__class__)
 			with self.subsession as subsession:
 				return User(subsession(Query(
-					select(sql.System_Admins.parent_id).where(sql.System_Admins.id == self.id)
+					select(sql.SystemAdmins.parent_id).where(sql.SystemAdmins.id == self.id)
 					)), self.session)
 			
 		elif attr == "children":
@@ -228,7 +228,7 @@ class User(General):
 				raise AttributeError(attr, self.__class__)
 			with self.subsession as subsession:
 				return [ User(ide, self.session) for ide in subsession(Query(
-					select(sql.System_Admins.id).where(sql.System_Admins.parent_id == self.id),
+					select(sql.SystemAdmins.id).where(sql.SystemAdmins.parent_id == self.id),
 					True )) ]
 				
 		elif attr == "firstChild":
@@ -237,8 +237,8 @@ class User(General):
 			for child in self.children:
 				with self.subsession as subsession:
 					result = subsession(Query(
-						select(sql.System_Admins.id, sql.System_Admins.promotion_time)
-						.where(sql.System_Admins.id == child.id)
+						select(sql.SystemAdmins.id, sql.SystemAdmins.promotion_time)
+						.where(sql.SystemAdmins.id == child.id)
 						))
 					if result:
 						ide, newDate = result
@@ -279,8 +279,8 @@ class User(General):
 		elif attr == "projects":
 			with self.subsession as subsession:
 				return [ Project(ide, self.session) for ide in subsession(Query(
-					select(sql.Projects_To_Resources_Lkp.project_id)
-					.where(sql.Projects_To_Resources_Lkp.user_id == self.id),
+					select(sql.ProjectsToResourcesLkp.project_id)
+					.where(sql.ProjectsToResourcesLkp.user_id == self.id),
 					True )) ]
 					
 		elif attr == "ownedProjects":
@@ -298,7 +298,7 @@ class User(General):
 				if not self.admin:
 					raise AttributeError(attr, self.__class__)
 				row = subsession(Query(
-					select(sql.System_Admins).where(sql.System_Admins.id == self.id)
+					select(sql.SystemAdmins).where(sql.SystemAdmins.id == self.id)
 					))
 				row.parent_id = value.id if value else None
 				subsession.add(row)
@@ -312,8 +312,8 @@ class User(General):
 	def delete(self: Self) -> NoneType:
 		with self.subsession as subsession:
 			rows = subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.user_id == self.id), True))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.user_id == self.id), True))
 			for row in rows:
 				subsession.add(row, toDelete = True)
 			for project in self.ownedProjects:
@@ -322,22 +322,22 @@ class User(General):
 		
 	def addProject(self: Self, project: "Project", allocation: float = 1.0) -> NoneType:
 		with self.subsession as subsession:
-			subsession.add(Projects_To_Resources_Lkp(project.id, self.id, None, allocation))
+			subsession.add(sql.ProjectsToResourcesLkp(project.id, self.id, None, allocation))
 			
 	def releaseProject(self: Self, project: "Project") -> NoneType:
 		with self.subsession as subsession:
 			row = subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.project_id == project.id and
-					Projects_To_Resources_Lkp.user_id == self.id)))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
+					sql.ProjectsToResourcesLkp .user_id == self.id)))
 			subsession.add(row, toDelete = True)
 			
 	def inProject(self: Self, project: "Project") -> bool:
 		with self.subsession as subsession:
 			return bool(subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.project_id == project.id and
-					Projects_To_Resources_Lkp.user_id == self.id ))))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
+					sql.ProjectsToResourcesLkp.user_id == self.id ))))
 			
 class Project(General):
 
@@ -364,15 +364,15 @@ class Project(General):
 		elif attr == "users":
 			with self.subsession as subsession:
 				return [ User(ide, self.session) for ide in subsession(Query(
-					select(sql.Projects_To_Resources_Lkp.user_id)
-					.where(sql.Projects_To_Resources_Lkp.project_id == self.id),
+					select(sql.ProjectsToResourcesLkp.user_id)
+					.where(sql.ProjectsToResourcesLkp.project_id == self.id),
 					True )) ]
 		
 		elif attr == "resources":
 			with self.subsession as subsession:
 				return [ Resource(ide, self.session) for ide in subsession(Query(
-					select(sql.Projects_To_Resources_Lkp.resource_id)
-					.where(sql.Projects_To_Resources_Lkp.project_id == self.id),
+					select(sql.ProjectsToResourcesLkp.resource_id)
+					.where(sql.ProjectsToResourcesLkp.project_id == self.id),
 					True )) ]
 				
 		elif attr == "owner":
@@ -386,8 +386,8 @@ class Project(General):
 	def delete(self: Self) -> NoneType:
 		with self.subsession as subsession:
 			rows = subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.project_id == self.id), True))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.project_id == self.id), True))
 			for row in rows:
 				subsession.add(row, toDelete = True)
 		super().delete()
@@ -420,29 +420,29 @@ class Resource(General):
 		elif attr == "projects":
 			with self.subsession as subsession:
 				return [ Project(ide, self.session) for ide in subsession(Query(
-					select(sql.Projects_To_Resources_Lkp.project_id)
-					.where(sql.Projects_To_Resources_Lkp.resource_id == self.id),
+					select(sql.ProjectsToResourcesLkp.project_id)
+					.where(sql.ProjectsToResourcesLkp.resource_id == self.id),
 					True )) ]
 						
 		return super().__getattr__(attr)
 	
 	def addProject(self: Self, project: Project, allocation: float = 1.0) -> NoneType:
 		with self.subsession as subsession:
-			subsession.add(Projects_To_Resources_Lkp(project.id, None, self.id, allocation))
+			subsession.add(sql.ProjectsToResourcesLkp(project.id, None, self.id, allocation))
 			
 	def releaseProject(self: Self, project: Project) -> NoneType:
 		with self.subsession as subsession:
 			row = subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.project_id == project.id and
-					Projects_To_Resources_Lkp.resource_id == self.id)))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
+					sql.ProjectsToResourcesLkp.resource_id == self.id)))
 			subsession.add(row, toDelete = True)
 			
 	def delete(self: Self) -> NoneType:
 		with self.subsession as subsession:
 			rows = subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.resource_id == self.id), True))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.resource_id == self.id), True))
 			for row in rows:
 				subsession.add(row, toDelete = True)
 		super().delete()
@@ -453,6 +453,6 @@ class Resource(General):
 	def inProject(self: Self, project: Project) -> bool:
 		with self.subsession as subsession:
 			return bool(subsession(Query(
-				select(Projects_To_Resources_Lkp)
-				.where(Projects_To_Resources_Lkp.project_id == project.id and
-					Projects_To_Resources_Lkp.resource_id == self.id ))))
+				select(sql.ProjectsToResourcesLkp)
+				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
+					sql.ProjectsToResourcesLkp.resource_id == self.id ))))

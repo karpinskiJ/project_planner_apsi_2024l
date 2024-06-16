@@ -52,10 +52,12 @@ VALUES
 CREATE TABLE technical_resources(
     id serial  NOT NULL,
     name VARCHAR(100) NOT NULL,
+    manager_id integer,
 --    TO DO ADD MORE FIELDS
-    CONSTRAINT pk_technical_resources PRIMARY KEY (id)
+    CONSTRAINT pk_technical_resources PRIMARY KEY (id)                 ,
+    CONSTRAINT fk_user_id FOREIGN KEY (manager_id) REFERENCES users ("id")
 );
-INSERT INTO technical_resources (name) VALUES ('car'),('laptop'),('screen') ;
+INSERT INTO technical_resources (name,manager_id) VALUES ('car',1),('laptop',1),('screen',1) ;
 
 create table projects_to_resources_lkp(
     id serial NOT NULL,
@@ -74,7 +76,6 @@ INSERT INTO projects_to_resources_lkp (project_id, user_id, resource_id, allocat
 (1, 1, NULL, 1.0),
 (1, 2, Null, 0.5),
 (2, 2, Null, 0.5),
-(2, 2, Null, 0.3),
 (2, 5, Null, 0.5),
 (2, 3, Null, 0.6),
 (1,NULL,1,0.6),
@@ -83,12 +84,13 @@ INSERT INTO projects_to_resources_lkp (project_id, user_id, resource_id, allocat
 (1,NULL,3,1.0);
 
 CREATE TABLE system_admins(
-	id serial not null,
-	user_id integer,
-	CONSTRAINT pk_admins PRIMARY KEY ("id"),
-	CONSTRAINT fk_admins_users FOREIGN KEY (id) REFERENCES users ( "id" )
+	id integer NOT NULL,
+	parent_id integer,
+	promotion_time timestamp NOT NULL,
+	CONSTRAINT pk_admins PRIMARY KEY (id),
+	CONSTRAINT fk_admins_users FOREIGN KEY (id) REFERENCES users ( "id" ),
+	CONSTRAINT fk_admins_super_users FOREIGN KEY (parent_id) REFERENCES users ( "id" )
 );
-INSERT INTO system_admins (user_id) VALUES (4),(7);
 
 
 

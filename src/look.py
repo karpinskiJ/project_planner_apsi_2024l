@@ -49,6 +49,7 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
 			buttons.append(Button("Edit resource", "/edit?kind=resource&item=" + item))
 			buttons.append(Button("Delete resource", "/delete?kind=resource&item=" + item))
 		links.append(Link("Projects", "show", "/look?kind=project&of=resource&item=" + item))
+
 	else:
 		return PageNotExistAnswer()
 	return OneAnswer(kind, wrap.acceptVisitor(LookOneVisitor),
@@ -91,6 +92,8 @@ def lookInternal(kind: str, of: str | NoneType = None,
 				buttons.append(Button("Add resource", "/add?kind=resource"))
 		else:
 			return PageNotExistAnswer()
+	# elif kind == "calendar":
+		
 	else:
 		return PageNotExistAnswer()
 	return ListAnswer(kind, of, item, [ wrape.acceptVisitor(LinkVisitor) for wrape in liste ], buttons)
