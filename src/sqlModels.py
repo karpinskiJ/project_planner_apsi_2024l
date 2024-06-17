@@ -19,9 +19,9 @@ class ResourceType(Enum):
 
 
 class ProjectStatus(Enum):
-    PENDING = 'pending'
-    IN_PROGRESS = 'in_progress'
-    COMPLETED = 'completed'
+    pending = 'pending'
+    in_progress = 'in_progress'
+    completed = 'completed'
 
 
 class Projects(SQLModel, table=True):

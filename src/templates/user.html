@@ -7,53 +7,36 @@
 </head>
 <body>
 {% include "navigation.html" %}
-<div class="main-content d-flex justify-content-center align-items-center vh-100">
+<div class="main-content">
     <div class="container">
-        <div class="card p-4 shadow-lg">
-            <h2 class="card-title text-center mb-4">User Details</h2>
+        <div class="presentation">
+            <h2>User Details</h2>
             <div class="user-details">
-                <div class="form-group row">
-                    <label class="col-sm-4 col-form-label font-weight-bold">Login:</label>
-                    <div class="col-sm-8">
-                        <p class="form-control-plaintext">{{item.login}}</p>
-                    </div>
+                <div class="form-group">
+                    <label>Login:&nbsp;</label><span class="value">{{item.login}}</span>
                 </div>
-                <div class="form-group row">
-                    <label class="col-sm-4 col-form-label font-weight-bold">Name:</label>
-                    <div class="col-sm-8">
-                        <p class="form-control-plaintext">{{item.name}}</p>
-                    </div>
+                <div class="form-group">
+                    <label>Name:&nbsp;</label><span class="value">{{item.name}}</span>
                 </div>
-                <div class="form-group row">
-                    <label class="col-sm-4 col-form-label font-weight-bold">Surname:</label>
-                    <div class="col-sm-8">
-                        <p class="form-control-plaintext">{{item.surname}}</p>
-                    </div>
+                <div class="form-group">
+                    <label>Surname:&nbsp;</label><span class="value">{{item.surname}}</span>
                 </div>
-                <div class="form-group row">
-                    <label class="col-sm-4 col-form-label font-weight-bold">Role:</label>
-                    <div class="col-sm-8">
-                        <p class="form-control-plaintext">{{item.role}}</p>
-                    </div>
+                <div class="form-group">
+                    <label>Role:&nbsp;</label><span class="value">{{item.role}}</span>
                 </div>
                 {% if showProjectsOption %}
-                <div class="form-group row">
-                    <label class="col-sm-4 col-form-label font-weight-bold">Projects:</label>
-                    <div class="col-sm-8">
-                        <a href="/lookOne?kind=projects&item={{item.login}}" class="btn btn-info">Show</a>
-                    </div>
+                <div class="form-group">
+                    <label>Projects:&nbsp;</label><span class="value"><a href="/lookOne?kind=projects&item={{item.login}}">show</a></span>
                 </div>
                 {% endif %}
             </div>
-            <div class="text-center mt-4">
+            <div class="form-group text-center">
                 <button type="button" class="btn btn-secondary" onclick="window.location.href='/'">Return</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
