@@ -8,11 +8,11 @@
 <body>
 {% include "navigation.html" %}
 <div class="presentation">
-{% include "headers.html" %}
-{% for item in liste %}
-<a href="{{item.link}}">{{item.text}}</a><br/>
-{% endfor %}
-{% include "buttons.html" %}
+    {% include "headers.html" %}
+    {% for item in liste %}
+    <a href="{{item.link}}">{{item.text}}</a><br/>
+    {% endfor %}
+    {% include "buttons.html" %}
 </div>
 </body>
 </html>

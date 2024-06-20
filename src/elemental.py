@@ -14,7 +14,7 @@ def uniqueNameField(kind: str) -> sqlmodel.Field:
 	elif kind == "project":
 		return sql.Projects.name
 	elif kind == "resource":
-		return sql.Technical_Resources.name
+		return sql.TechnicalResources.name
 		
 def modelType(kind: str) -> sqlmodel.SQLModel:
 	if kind == "user":
@@ -22,4 +22,4 @@ def modelType(kind: str) -> sqlmodel.SQLModel:
 	elif kind == "project":
 		return sql.Projects
 	elif kind == "resource":
-		return sql.Technical_Resources
+		return sql.TechnicalResources
