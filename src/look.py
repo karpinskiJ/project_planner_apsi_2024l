@@ -96,5 +96,6 @@ def lookInternal(kind: str, of: str | NoneType = None,
 		
 	else:
 		return PageNotExistAnswer()
+	print(liste)
 	return ListAnswer(kind, of, item, [ wrape.acceptVisitor(LinkVisitor) for wrape in liste ], buttons)
 	

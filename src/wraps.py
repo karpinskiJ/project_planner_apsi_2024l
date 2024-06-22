@@ -334,10 +334,10 @@ class User(General):
 			
 	def inProject(self: Self, project: "Project") -> bool:
 		with self.subsession as subsession:
-			return bool(subsession(Query(
+			return subsession(Query(
 				select(sql.ProjectsToResourcesLkp)
-				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
-					sql.ProjectsToResourcesLkp.user_id == self.id ))))
+				.where((sql.ProjectsToResourcesLkp.project_id == project.id) &
+					(sql.ProjectsToResourcesLkp.user_id == self.id)))) is not None 
 			
 class Project(General):
 
@@ -366,14 +366,14 @@ class Project(General):
 				return [ User(ide, self.session) for ide in subsession(Query(
 					select(sql.ProjectsToResourcesLkp.user_id)
 					.where(sql.ProjectsToResourcesLkp.project_id == self.id),
-					True )) ]
+					True )) if ide is not None ]
 		
 		elif attr == "resources":
 			with self.subsession as subsession:
 				return [ Resource(ide, self.session) for ide in subsession(Query(
 					select(sql.ProjectsToResourcesLkp.resource_id)
 					.where(sql.ProjectsToResourcesLkp.project_id == self.id),
-					True )) ]
+					True )) if ide is not None ]
 				
 		elif attr == "owner":
 			with self.subsession as subsession:
@@ -434,8 +434,8 @@ class Resource(General):
 		with self.subsession as subsession:
 			row = subsession(Query(
 				select(sql.ProjectsToResourcesLkp)
-				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
-					sql.ProjectsToResourcesLkp.resource_id == self.id)))
+				.where((sql.ProjectsToResourcesLkp.project_id == project.id) &
+					(sql.ProjectsToResourcesLkp.resource_id == self.id))))
 			subsession.add(row, toDelete = True)
 			
 	def delete(self: Self) -> NoneType:
@@ -454,5 +454,5 @@ class Resource(General):
 		with self.subsession as subsession:
 			return bool(subsession(Query(
 				select(sql.ProjectsToResourcesLkp)
-				.where(sql.ProjectsToResourcesLkp.project_id == project.id and
-					sql.ProjectsToResourcesLkp.resource_id == self.id ))))
+				.where((sql.ProjectsToResourcesLkp.project_id == project.id) &
+					(sql.ProjectsToResourcesLkp.resource_id == self.id)))))
