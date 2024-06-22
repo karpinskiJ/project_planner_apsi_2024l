@@ -239,3 +239,9 @@ class CannotDegradeAnswer(ErrorAnswer):
 
 	def __init__(self: Self, name: str) -> NoneType:
 		super().__init__("Cannot degrade user " + name)
+		
+class NotPermittedAnswer(ErrorAnswer):
+	
+	def __init__(self: Self, kind: str, name: str) -> NoneType:
+		super().__init__("Cannot view " + kind + ": " + name)
+

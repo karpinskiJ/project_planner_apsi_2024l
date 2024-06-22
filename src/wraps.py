@@ -170,7 +170,21 @@ class User(General):
 			return self.canEditProject(item)
 		elif kind == "resource":
 			return self.canEditResource(item)
-			
+	
+	def canView(self: Self, kind: str, wrap: User | Project | Resource) -> bool:
+		if kind == "project" or kind == "resource":
+			return True
+		elif kind == "user":
+			if wrap == self:
+				return True
+			role = self.model.role
+			if role == sql.ProjectRole.admin:
+				return True
+			elif role == sql.ProjectRole.manager:
+				return wrap.manager == self
+			elif role == sql.ProjectRole.worker:
+				return False
+				
 	def delete(self: Self) -> NoneType:
 		if self.admin:
 			self.degrade()
@@ -275,6 +289,9 @@ class User(General):
 					return "admin"
 			else:
 				return "usual"
+				
+		elif attr == "manager":
+			return User(self.model.manager_id)
 				
 		elif attr == "projects":
 			with self.subsession as subsession:

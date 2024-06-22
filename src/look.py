@@ -17,6 +17,8 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
 	# up there is promotion to wrap
 	wrap = General.make(kind, item)
 	# up there is promotion to wrap
+	if not user.canView(kind, wrap):
+		return NotPermittedAnswer(kind, item)
 	if not wrap.exists:
 		return ItemNotExistsAnswer(kind, item)
 	buttons = []
@@ -63,6 +65,8 @@ def lookInternal(kind: str, of: str | NoneType = None,
 	if item == True:
 		item = user
 	wrap = General.make(of, item) if of else None
+	if of and not User(user).canView(of, wrap):
+		return NotPermittedAnswer(of, item)
 	liste = None
 	buttons = []
 	if kind == "project":
@@ -96,6 +100,6 @@ def lookInternal(kind: str, of: str | NoneType = None,
 		
 	else:
 		return PageNotExistAnswer()
-	print(liste)
+	liste = [ item for item in liste if User(user).canView(kind, item) ]
 	return ListAnswer(kind, of, item, [ wrape.acceptVisitor(LinkVisitor) for wrape in liste ], buttons)
 	
