@@ -10,7 +10,7 @@
 <div class="presentation">
     {% include "headers.html" %}
     {% for item in liste %}
-    <a href="{{item.link}}">{{item.text}}</a><br/>
+    <a href="{{item.link}}" style="background-color: #f0ad4e; padding: 5px; color: white; border-radius: 3px; display: block; margin-bottom: 10px;">{{item.text}}</a>
     {% endfor %}
     {% include "buttons.html" %}
 </div>
