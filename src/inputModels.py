@@ -154,14 +154,14 @@ class Resource(InputModel):
 	def init(self: Self, name: str, *, old: NoneType = None) -> NoneType:
 		self.name = name
 		
-	def sendTo(self: Self, sqlModel: sql.Technical_Resources) -> NoneType:
+	def sendTo(self: Self, sqlModel: sql.TechnicalResources) -> NoneType:
 		sqlModel.name = self.name
 		
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.name
 		elif attr == "toSQL":
-			return sql.Technical_Resources(name = self.name)
+			return sql.TechnicalResources(name = self.name)
 		return super().__getattr__(attr)
 		
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:

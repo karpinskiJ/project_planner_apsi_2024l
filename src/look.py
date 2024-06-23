@@ -35,11 +35,11 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
 				buttons.append(Button("Degrade", "/promote?item=" + item + "&promote=false"))
 	elif kind == "project":
 		links.append(Link("Owner", wrap.owner.login, "/lookOne?kind=user&item=" + wrap.owner.login))
-		if wrap != user.project and user.canJoinProject(wrap):
+		if user.canJoinProject(wrap):
 			buttons.append(Button("Join project", "/join?name=" + item))
-		if wrap == user.project and wrap.owner != user:
+		if user.inProject(wrap) and wrap.owner != user:
 			buttons.append(Button("Leave project", "/join?name=" + item + "&join=false"))
-		if user.canEdit("project", wrap):
+		if user.canEditProject(wrap):
 			buttons.append(Button("Edit project", "/edit?kind=project&item=" + item))
 			buttons.append(Button("Delete project", "/delete?kind=project&item=" + item))
 		links.append(Link("Users", "show", "/look?kind=user&of=project&item=" + item))
@@ -48,13 +48,8 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
 		if user.canEditResource(wrap):
 			buttons.append(Button("Edit resource", "/edit?kind=resource&item=" + item))
 			buttons.append(Button("Delete resource", "/delete?kind=resource&item=" + item))
-		if user.owns:
-			if not wrap.project:
-				buttons.append(Button("Add to your project", "/compose?item=" + item))
-			if user.project == wrap.project:
-				buttons.append(Button("Release from your project",
-					"/compose?item=" + item + "&compose=false"))
 		links.append(Link("Projects", "show", "/look?kind=project&of=resource&item=" + item))
+
 	else:
 		return PageNotExistAnswer()
 	return OneAnswer(kind, wrap.acceptVisitor(LookOneVisitor),
@@ -72,11 +67,11 @@ def lookInternal(kind: str, of: str | NoneType = None,
 	buttons = []
 	if kind == "project":
 		if of == "user":
-			liste = [ wrap.project ] if wrap.project else []
+			liste = wrap.projects
 			if item == user and User(user).canEditProject():
 				buttons.append(Button("Add project", "/add?kind=project"))
 		elif of == "resource":
-			liste = [ wrap.project ] if wrap.project else []
+			liste = wrap.projects
 		elif of is None:
 			liste = General().all("project")
 		else:
@@ -97,6 +92,8 @@ def lookInternal(kind: str, of: str | NoneType = None,
 				buttons.append(Button("Add resource", "/add?kind=resource"))
 		else:
 			return PageNotExistAnswer()
+	# elif kind == "calendar":
+		
 	else:
 		return PageNotExistAnswer()
 	return ListAnswer(kind, of, item, [ wrape.acceptVisitor(LinkVisitor) for wrape in liste ], buttons)
