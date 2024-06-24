@@ -85,6 +85,8 @@ def lookInternal(kind: str, of: str | NoneType = None,
 			liste = wrap.users
 		elif of is None:
 			liste = General().all("user")
+			if User(user).canEditUser():
+				buttons.append(Button("Add user", "/add?kind=user"))
 		else:
 			return PageNotExistAnswer()
 	elif kind == "resource":

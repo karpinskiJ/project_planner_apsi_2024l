@@ -9,7 +9,6 @@ import os
 from answers import *
 from look import *
 from edit import edited
-import inputModels as inpute
 from wraps import User, Project, Resource
 import wraps
 from globs import app, authHandler
@@ -82,50 +81,48 @@ def delete(request: Request, kind: Annotated[str | NoneType, Query()] = None,
     return delete
 
 
-@app.get('/promote', response_class=HTMLResponse)
-def promote(request: Request, item: Annotated[str | NoneType, Query()] = None,
-            promote: Annotated[bool, Query()] = True,
-            token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-    user = checkToken(token)
-    if isinstance(user, Answer):
-        return user.toHTML(request)
-    user = User(user)
-    if item is None:
-        return PageNotExistAnswer().toHTML(request)
-    wrap = User(item)
-    if not wrap.exists:
-        return ItemNotExistsAnswer("kind", item).toHTML(request)
-    if promote:
-        if user.admin and not wrap.admin:
-            wrap.makeAdmin(user)
-            return SuccessPromoteAnswer(item).toHTML(request)
-        else:
-            return CannotPromoteAnswer(item).toHTML(request)
-    else:
-        if user.admin and wrap.inherits(user):
-            wrap.degrade()
-            return SuccessDegradeAnswer(item).toHTML(request)
-        else:
-            return CannotDegradeAnswer(item).toHTML(request)
-
-
 @app.get('/create', response_class=HTMLResponse)
 def create(request: Request, kind: Annotated[str | NoneType, Query()] = None,
            token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
     if isinstance(user, Answer):
         return user.toHTML(request)
-    if kind != "project" and kind != "resource":
+    if not ( kind == "project" or kind == "resource" or kind == "user"):
         return PageNotExistAnswer().toHTML(request)
     if not User(user).canEdit(kind):
         return CannotCreateAnswer(kind)
     return ToEditAnswer(empty.Model.make(kind).acceptVisitor(ToEditVisitor)).toHTML(request)
 
+@app.get('/changePassword', response_class = HTMLResponse)
+def changePassword(request: Request, 
+	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+	user = checkToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    return ToEditAnswer("user", User(user).acceptVisitor(ToEditVisitor,
+		advanced = True), user, advanced = True).toHTML(request)
+
+@app.post('/changedPassword', response_class = HTMLResponse)
+def changedPassword(request: Request, old: Annotated[str | NoneType, Form()] = None,
+	password: Annotated[str | NoneType, Form()] = None,
+	repeated: Annotated[str | NoneType, Form()] = None,
+	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+	user = checkToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    if not (old and password and repeated):
+		return LackOfFieldsAnswer("password", user).toHTML(request)
+	if not authHandler.verify(old, user.model.password):
+        return BadPasswordAnswer().toHTML(request, False)
+	if password != repeated:
+		return NotConsistentAnswer("passwords")
+	User(user).password = authHandler.hash(password)
+	return SuccessAnswer("Successfully changed password")
+	
 
 @app.get('/edit', response_class=HTMLResponse)
 def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
          item: Annotated[str | NoneType, Query()] = None,
-         advanced: Annotated[bool, Query()] = False,
          token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
     if isinstance(user, Answer):
@@ -144,8 +141,7 @@ def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
     else:
         if not user.canEdit(kind, wrap):
             return CannotChangeAnswer(kind, item).toHTML(request)
-    return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor,
-                                                 advanced=advanced), item, advanced=advanced).toHTML(request)
+    return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item).toHTML(request)
 
 
 # to change
@@ -186,8 +182,7 @@ def user(request: Request, login: Annotated[str | NoneType, Form()] = None,
          token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     item = receiveToken(token)
     logged = item is not None
-    inputModel = inpute.makeUser(logged, advanced, login, password,
-                                 repeated, old, name, surname, role)
+    inputModel = inpute.makeUser(login, name, surname, role, password = "password")
     if inputModel is None:
         return LackOfFieldsAnswer("user", item).toHTML(request, logged)
     return edited("user", inputModel, item, User(item)).toHTML(request, logged)
@@ -251,21 +246,6 @@ def logged(request: Request,
     response.set_cookie(key="token", value=authHandler.encodeToken(login))
     response.status_code = 302
     return response
-
-
-@app.get('/add', response_class=HTMLResponse)
-def add(request: Request, kind: Annotated[str | NoneType, Query()] = None,
-        token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-    user = checkToken(token)
-    if isinstance(user, Answer):
-        return user.toHTML(request)
-    if kind != "project" and kind != "resource":
-        return PageNotExistAnswer().toHTML(request)
-    if not User(user).canEdit(kind):
-        return CannotCreateAnswer(kind).toHTML(request)
-    model = empty.Project() if kind == "project" else empty.Resource()
-    return ToEditAnswer(kind, model.acceptVisitor(ToEditVisitor)).toHTML(request)
-
 
 @app.get('/join', response_class=Response)
 def join(request: Request, join: Annotated[bool, Query()] = True,

@@ -9,7 +9,9 @@ class Model:
 	
 	@staticmethod
 	def make(kind: str) -> Self | NoneType:
-		if kind == "project":
+		if kind == "user":
+			return User()
+		elif kind == "project":
 			return Project()
 		elif kind == "resource":
 			return Resource()
@@ -19,8 +21,6 @@ class User(Model):
 	def __init__(self: Self) -> NoneType:
 		super().__init__()
 		self.login = ""
-		self.password = ""
-		self.repeatedPassword = ""
 		self.name = ""
 		self.surname = ""
 		self.role = "" 

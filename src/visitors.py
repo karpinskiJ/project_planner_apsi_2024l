@@ -53,18 +53,13 @@ class ToEditVisitor:
 			]
 	
 	@staticmethod
-	def visitUser(user: wraps.User | empty.User, *, advanced: bool,
-		old: bool = True,
-		required: bool = False) -> list[widgets.ToEdit]:
+	def visitUser(user: wraps.User | empty.User, *, advanced: bool = False) -> list[widgets.ToEdit]:
 		model = user.model
 		if advanced:
-			returnal = [
-				ToEdit("old", "Old password", "", "password")
-				] if old else []
-			return returnal + [
-				ToEdit("login", "Login", model.login),
-				ToEdit("password", "Password", "", "password", required = required),
-				ToEdit("repeated", "Repeat password", "", "password", required = required)
+			return [
+				ToEdit("old", "Old password", "", "password"),
+				ToEdit("password", "Password", "", "password"),
+				ToEdit("repeated", "Repeat password", "", "password")
 				]
 		else:
 			return [
@@ -72,11 +67,6 @@ class ToEditVisitor:
 				ToEdit("surname", "Surname", model.surname),
 				ToEdit("role", "Role", model.role)
 				]
-				
-	@staticmethod
-	def visitEmptyUser(user: empty.User) -> list[widgets.ToEdit]:
-		return (ToEditVisitor.visitUser(user, advanced = True, old = False, required = True)
-			+ ToEditVisitor.visitUser(user, advanced = False) )
 		
 	@staticmethod
 	def visitResource(resource: wraps.Resource | empty.Resource) -> list[widgets.ToEdit]:

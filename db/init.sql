@@ -92,15 +92,6 @@ INSERT INTO projects_to_resources_lkp (project_id, user_id, resource_id, allocat
 (1,NULL,2,1.0),
 (1,NULL,3,1.0);
 
-CREATE TABLE system_admins(
-	id integer NOT NULL,
-	parent_id integer,
-	promotion_time timestamp NOT NULL,
-	CONSTRAINT pk_admins PRIMARY KEY (id),
-	CONSTRAINT fk_admins_users FOREIGN KEY (id) REFERENCES users ( "id" ),
-	CONSTRAINT fk_admins_super_users FOREIGN KEY (parent_id) REFERENCES users ( "id" )
-);
-
 
 
 

@@ -122,58 +122,43 @@ class User(General):
 		
 	def __eq__(self: Self, another: Self) -> bool:
 		return another and self.login == another.login
-	
-	def makeAdmin(self: Self, parent: Self | NoneType = None) -> NoneType:
-		if parent:
-			parent = parent.id
-		with self.subsession as subsession:
-			subsession.add(sql.SystemAdmins(id = self.id, parent_id = parent,
-                                            promotion_time = datetime.datetime.now()))
-			
-	def inherits(self: Self, another: Self) -> bool:
-		anch = another.id
-		sub = self.id
-		with self.subsession as subsession:
-			while sub is not None:
-				sub = subsession(Query(
-					select(sql.SystemAdmins.parent_id).where(sql.SystemAdmins.id == sub)
-					))
-				if sub == anch:
-					return True
-		return False
 		
 	def canDeleteUser(self: Self, another: Self) -> bool:
-		return ( self == another or self.admin and 
-			( not another.admin or another.inherits(self) ) )
-	
-	def owner(self: Self, project: Project) -> bool:
-		with self.subsession as subsession:
-			return (subsession(Query(
-				select(sql.Projects.owner_id).where(sql.Projects.name == project.name)
-				)) == self.id)
+		return self.model.role == sql.ProjectRole.admin
 			
 	def canJoinProject(self: Self, project: Project) -> bool:
-		return not self.inProject(project)
+		return not self.inProject(project) and self.model.role == sql.ProjectRole.worker
 		
 	def canEditProject(self: Self, project: Project | NoneType = None) -> bool:
 		if not project:
-			return True
+			return self.model.role == sql.ProjectRole.manager
 		else:
-			return self.admin or self.owner(project)
+			return project.owner == self
 			
 	def canEditResource(self: Self, resource: Resource | NoneType = None) -> bool:
-		return self.admin
-		# this may be to change
+		if not resource:
+			return self.model.role == sql.ProjectRole.manager
+		else:
+			return project.owner == self
 		
-	def canEdit(self: Self, kind: str, item: Project | Resource | NoneType = None) -> bool:
+	def canEditUser(self: Self, user: User | NoneType = None) -> bool:
+		return self.model.role == sql.ProjectRole.admin
+		
+	def canEdit(self: Self, kind: str, item: Project | Resource | User | NoneType = None) -> bool:
 		if kind == "project":
 			return self.canEditProject(item)
 		elif kind == "resource":
 			return self.canEditResource(item)
+		elif kind == "user":
+			return self.canEditUser(item)
 	
 	def canView(self: Self, kind: str, wrap: User | Project | Resource) -> bool:
-		if kind == "project" or kind == "resource":
-			return True
+		if kind == "project":
+			return self.model.role == sql.ProjectRole.admin or self.inProject(wrap)
+		elif kind == "resource":
+			role = self.model.role
+			return role == sql.ProjectRole.admin or
+				role == sql.ProjectRole.manager
 		elif kind == "user":
 			if wrap == self:
 				return True
@@ -181,13 +166,11 @@ class User(General):
 			if role == sql.ProjectRole.admin:
 				return True
 			elif role == sql.ProjectRole.manager:
-				return wrap.manager == self
+				return wrap.model.role == sql.ProjectRole.worker
 			elif role == sql.ProjectRole.worker:
 				return False
 				
 	def delete(self: Self) -> NoneType:
-		if self.admin:
-			self.degrade()
 		self.deleteProjects()
 		super().delete()
 		
@@ -195,100 +178,10 @@ class User(General):
 		project = self.project
 		if project and self.owner(project):
 			project.delete()
-				
-	def degrade(self: Self) -> NoneType:
-		parent = self.parent
-		if not parent:
-			first = self.firstChild
-			if first:
-				for child in self.children:
-					if first != child:
-						child.parent = first
-				first.parent = None
-			else:
-				first = self.firstUser
-				if first:
-					first.makeAdmin(self)
-					self.degrade()
-					return
-		else:
-			for child in self.children:
-				child.parent = parent
-		with self.subsession as subsession:
-			admin = subsession(Query(
-				select(sql.SystemAdmins).where(sql.SystemAdmins.id == self.id)
-				))
-			subsession.add(admin, toDelete = True)
 		
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.login
-		elif attr == "admin":
-			with self.subsession as subsession:
-				return subsession(Query(
-					select(sql.SystemAdmins.id).where(sql.SystemAdmins.id == self.id)
-					)) is not None
-	
-		elif attr == "parent":
-			if not self.admin:
-				raise AttributeError(attr, self.__class__)
-			with self.subsession as subsession:
-				return User(subsession(Query(
-					select(sql.SystemAdmins.parent_id).where(sql.SystemAdmins.id == self.id)
-					)), self.session)
-			
-		elif attr == "children":
-			if not self.admin:
-				raise AttributeError(attr, self.__class__)
-			with self.subsession as subsession:
-				return [ User(ide, self.session) for ide in subsession(Query(
-					select(sql.SystemAdmins.id).where(sql.SystemAdmins.parent_id == self.id),
-					True )) ]
-				
-		elif attr == "firstChild":
-			date = None
-			firstChild = None
-			for child in self.children:
-				with self.subsession as subsession:
-					result = subsession(Query(
-						select(sql.SystemAdmins.id, sql.SystemAdmins.promotion_time)
-						.where(sql.SystemAdmins.id == child.id)
-						))
-					if result:
-						ide, newDate = result
-				if date is None or newDate < date:
-					date = newDate
-					firstChild = ide
-			if firstChild is not None:
-				firstChild = User(firstChild)
-			return firstChild
-			
-		elif attr == "firstUser":
-			date = None
-			firstUser = None
-			for user in self.all("user"):
-				with self.subsession as subsession:
-					result = subsession(Query(
-						select(sql.Users.id, sql.Users.setup_time)
-						.where(sql.Users.id == user.id)
-						))
-					if result:
-						ide, newDate = result
-				if self != user and (date is None or newDate < date):
-					date = newDate
-					firstUser = ide
-			if firstUser is not None:
-				firstUser = User(firstUser)
-			return firstUser
-			
-		elif attr == "position":
-			if self.admin:
-				if self.parent is None:
-					return "head admin"
-				else:
-					return "admin"
-			else:
-				return "usual"
 				
 		elif attr == "manager":
 			return User(self.model.manager_id)
@@ -308,19 +201,6 @@ class User(General):
 					True )) ]
 		
 		return super().__getattr__(attr)
-	
-	def __setattr__(self: Self, attr: str, value: Any) -> NoneType:
-		if attr == "parent":
-			with self.subsession as subsession:
-				if not self.admin:
-					raise AttributeError(attr, self.__class__)
-				row = subsession(Query(
-					select(sql.SystemAdmins).where(sql.SystemAdmins.id == self.id)
-					))
-				row.parent_id = value.id if value else None
-				subsession.add(row)
-				return
-		self.__dict__[attr] = value
 		
 	def acceptVisitor(self: Self, visitor: Any, *,
 		advanced: bool = False) -> Any:
@@ -409,7 +289,7 @@ class Project(General):
 				subsession.add(row, toDelete = True)
 		super().delete()
 		
-	def acceptVisitor(self: Self, visitor: Any, *, advanced: bool = False) -> Any:
+	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitProject(self)
 
 class Resource(General):
@@ -464,7 +344,7 @@ class Resource(General):
 				subsession.add(row, toDelete = True)
 		super().delete()
 			
-	def acceptVisitor(self: Self, visitor: Any, *, advanced: bool = False) -> Any:
+	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitResource(self)
 	
 	def inProject(self: Self, project: Project) -> bool:

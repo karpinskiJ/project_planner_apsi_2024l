@@ -93,9 +93,3 @@ class ProjectsToResourcesLkp(SQLModel, table=True):
     resource_id: int = Field(foreign_key="technical_resources.id")
     allocation_part: float
 
-
-class SystemAdmins(SQLModel, table=True):
-    __tablename__ = "system_admins"
-    id: int = Field(primary_key=True)
-    parent_id: Optional[int]
-    promotion_time: datetime

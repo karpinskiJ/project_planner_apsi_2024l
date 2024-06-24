@@ -71,10 +71,12 @@ class Project(InputModel):
 
 class UserDescription(InputModel):
 
-	def init(self: Self, name: str, surname: str, role: str, *, old: NoneType = None) -> NoneType:
+	def init(self: Self, name: str, surname: str, role: str, *,
+		password: str | NoneType = None) -> NoneType:
 		self.name = name
 		self.surname = surname
 		self.role = role
+		self.password = password
 		
 	def sendTo(self: Self, sqlModel: sql.Users) -> NoneType:
 		sqlModel.name = self.name
@@ -83,71 +85,6 @@ class UserDescription(InputModel):
 			
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitUser(item)
-		
-class UserCredentials(InputModel):
-			
-	def init(self: Self, login: str, *, old: str | NoneType = None) -> NoneType:
-		self.login = login
-		if old:
-			self.old = old
-		
-	def sendTo(self: Self, sqlModel: sql.Users) -> NoneType:
-		sqlModel.login = self.login
-		
-	def __getattr__(self: Self, attr: str) -> Any:
-		if attr == "uniqueName":
-			return self.login
-		return super().__getattr__(attr)
-		
-	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None)-> Any:
-		return visitor.visitUser(self)
-
-class FullUserCredentials(UserCredentials):
-
-	def init(self: Self, login: str, password: str, repeated: str, *,
-		old: str | NoneType = None) -> NoneType:
-		super().init(login, old = old)
-		self.password = password
-		self.repeated = repeated
-	
-	def sendTo(self: Self, sqlModel: sql.Users) -> NoneType:
-		super().sendTo(sqlModel)
-		sqlModel.password = self.password
-		
-	def __getattr__(self: Self, attr: str) -> Any:
-		if attr == "notConsistent":
-			if self.password != self.repeated:
-				return "passwords"
-			else:
-				return None
-		return super().__getattr__(attr)
-	
-class User(InputModel):
-
-	def init(self: Self, credentials: UserCredentials,
-		description: UserDescription, *, old: NoneType = None) -> NoneType:
-		self.credentials = credentials
-		self.description = description
-			
-	def __getattr__(self: Self, attr: str) -> Any:
-		if attr == "uniqueName":
-			return self.credentials.login
-		elif attr == "toSQL":
-			return sql.Users(login = self.credentials.login, password = self.credentials.password, 
-				name = self.description.name, surname = self.description.surname,
-				role = self.description.role, setup_time = datetime.now())
-		elif attr == "password":
-			return self.credentials.password
-		return super().__getattr__(attr)
-			
-	def __setattr__(self: Self, attr: str, value: Any) -> NoneType:
-		if attr == "password":
-			self.credentials.password = value
-		else:
-			self.__dict__[attr] = value
-			
-	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
-		return visitor.visitUser(self)
 		
 class Resource(InputModel):
 
