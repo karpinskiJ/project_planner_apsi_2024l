@@ -174,3 +174,18 @@ label, .value {
     background-color: #c94f4f;
     transform: scale(1.05);
 }
+
+.btn-download {
+    background-color: #5cb85c;
+    padding: 10px;
+    color: white;
+    border-radius: 5px;
+    display: block;
+    text-align: center;
+    margin-bottom: 20px;
+    text-decoration: none;
+}
+
+.btn-download:hover {
+    background-color: #4cae4c;
+}

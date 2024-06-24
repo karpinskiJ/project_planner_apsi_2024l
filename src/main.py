@@ -2,7 +2,7 @@ import json
 
 import inputModels as inpute
 from fastapi import FastAPI, Request, Form, Path, Cookie, Query
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, Response,JSONResponse,StreamingResponse,UJSONResponse
 from typing import Annotated
 import datetime
 import os
@@ -21,7 +21,11 @@ import sqlmodel
 from services import *
 import sqlModels as sql
 import numpy as np
-
+import pandas as pd
+import io
+from typing import Annotated, Optional
+import csv
+from starlette.responses import FileResponse
 
 @app.get('/', response_class=Response)
 def main(request: Request, token: Annotated[str | NoneType, Cookie()] = None) -> Response:
@@ -381,6 +385,12 @@ def logout(request: Request, token: Annotated[str | NoneType, Cookie()] = None) 
     response.delete_cookie("token")
     return response
 
+@app.get('/admin_panel', response_class=HTMLResponse)
+def admin_panel(request: Request, token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    user = checkToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    return Answer("admin_panel.html", "admin_panel").toHTML(request)
 
 @app.get('/advanced', response_class=HTMLResponse)
 def advanced(request: Request, token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
@@ -397,3 +407,38 @@ def getResource(request: Request, resource: Annotated[str, Path()],
     if not os.path.isfile(filename):
         return PageNotExistAnswer().toHTML(request, receiveToken(token) is not None)
     return FileResponse(filename)
+
+
+@app.get("/download/projects")
+def download_projects(token: Optional[str] = Cookie(None)):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    with sqlmodel.Session(get_engine()) as session:
+        query = f"""
+                   SELECT * FROM projects
+        """
+        data = session.exec(query).all()
+    columns = ["Project_name"," Project_description","start_date","end_date","status"]
+    writer.writerow(columns)
+    for row in data:
+        writer.writerow(row)
+    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=projects_report.csv"
+    return response
+
+@app.get("/download/users")
+def download_users(token: Optional[str] = Cookie(None)):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    with sqlmodel.Session(get_engine()) as session:
+        query = f"""
+                   SELECT id,name,surname,role,setup_time FROM users
+        """
+        data = session.exec(query).all()
+    columns = ["User_id"," User_name","User_surname","User_role","setup_time"]
+    writer.writerow(columns)
+    for row in data:
+        writer.writerow(row)
+    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=users_report.csv"
+    return response
