@@ -103,26 +103,4 @@ class Resource(InputModel):
 		
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitResource(self)
-		
-def makeUserCredentials(login: str | NoneType, password: str | NoneType,
-	repeated: str | NoneType, *, old: OldPassword | NoneType = None,
-	newRequired: bool = False) -> UserCredentials | NoneType:
-		if nothing(password) and nothing(repeated) and not newRequired:
-			return UserCredentials([login], old = old)
-		else:
-			return FullUserCredentials([login, password, repeated],
-				old = old)
-
-	
-def makeUser(logged, advanced, login, password,
-	repeated, old, name, surname, role):
-	if logged:
-		if advanced:
-			return makeUserCredentials(login, password, repeated,
-				old = OldPassword(old))
-		else:
-			return UserDescription([name, surname, role])
-	else:
-		return User([makeUserCredentials(login, password, repeated, newRequired = True),
-			UserDescription([name, surname, role])])
 

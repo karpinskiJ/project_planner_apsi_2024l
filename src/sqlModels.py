@@ -49,7 +49,6 @@ class Users(SQLModel, table=True):
     name: str = Field(max_length=50)
     surname: str = Field(max_length=50)
     role: ProjectRole = Column(ENUM(ProjectRole))
-    manager_id: Optional[int]
     setup_time: datetime
 
     def __getattr__(self: Self, attr: str) -> Any:
@@ -64,7 +63,7 @@ class Users(SQLModel, table=True):
 class TechnicalResources(SQLModel, table=True):
     __tablename__ = "technical_resources"
     id: Optional[int] = Field(primary_key=True)
-    manager_id: int
+    onwer_id: int
     name: str = Field(max_length=100)
     type: ResourceType = Column(ENUM(ResourceType))
 

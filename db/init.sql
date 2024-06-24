@@ -1,7 +1,7 @@
 CREATE DATABASE project_planner;
 \c project_planner;
 
-CREATE TYPE project_role AS ENUM ('manager', 'worker','admin');
+CREATE TYPE project_role AS ENUM ('manager', 'worker', 'admin');
 CREATE TABLE users(
 	id        serial NOT NULL,
 	login     varchar(50) NOT NULL,
@@ -9,18 +9,16 @@ CREATE TABLE users(
 	name      varchar(50) NOT NULL,
 	surname  varchar(50) NOT NULL,
 	role     project_role NOT NULL,
-	manager_id integer,
 	setup_time timestamp NOT NULL,
 	CONSTRAINT pk_users PRIMARY KEY ( "id" )
 );
-INSERT INTO users (login, password, name, surname, role, manager_id, setup_time) VALUES
-('manager1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'John', 'Doe', 'manager', NULL, NOW()),
-('worker1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Jane', 'Smith', 'worker', 1, NOW()),
-('worker2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Emily', 'Johnson', 'worker', 1, NOW()),
-('admin1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Alice', 'Williams', 'admin', NULL, NOW()),
-('manager2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Robert', 'Brown', 'manager', NULL, NOW()),
-('worker3', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Michael', 'Davis', 'worker', 5, NOW()),
-('admin2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Jessica', 'Garcia', 'admin', NULL, NOW());
+INSERT INTO users (login, password, name, surname, role, setup_time) VALUES
+('manager1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'John', 'Doe', 'manager', NOW()),
+('worker1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Jane', 'Smith', 'worker', NOW()),
+('worker2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Emily', 'Johnson', 'worker', NOW()),
+('admin1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Alice', 'Williams', 'admin', NOW()),
+('manager2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Robert', 'Brown', 'manager', NOW()),
+('worker3', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Michael', 'Davis', 'worker', NOW()),
 
 CREATE TYPE project_status AS ENUM ('pending', 'in_progress','completed');
 CREATE TABLE projects(
@@ -42,31 +40,25 @@ VALUES
 ('Project B', 'Description of Project B', '2024-06-15', '2024-08-31', 'pending',1),
 ('Project C', 'Description of Project C', '2024-03-20', '2024-06-01', 'completed',5);
 
-
-
-
-
-
-
 CREATE TYPE resource_type as ENUM('it_equipment','vehicle','office_equipment','other');
 CREATE TABLE technical_resources(
     id serial  NOT NULL,
     name VARCHAR(100) NOT NULL,
-    manager_id integer,
+    owner_id integer,
     type resource_type NOT NULL,
     CONSTRAINT pk_technical_resources PRIMARY KEY (id)                 ,
-    CONSTRAINT fk_user_id FOREIGN KEY (manager_id) REFERENCES users ("id")
+    CONSTRAINT fk_user_id FOREIGN KEY (owner_id) REFERENCES users ("id")
 );
-INSERT INTO technical_resources (name,manager_id,type) VALUES
+INSERT INTO technical_resources (name,onwer_id,type) VALUES
  ('car',1,'vehicle'),
  ('laptop',1,'it_equipment'),
  ('screen',1,'it_equipment'),
  ('printer',1,'it_equipment'),
  ('desk',1,'office_equipment'),
  ('chair',1,'office_equipment'),
- ('table',2,'office_equipment'),
+ ('table',5,'office_equipment'),
  ('phone',1,'office_equipment'),
- ('other',2,'other') ;
+ ('other',5,'other') ;
 
 create table projects_to_resources_lkp(
     id serial NOT NULL,

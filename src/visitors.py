@@ -53,20 +53,14 @@ class ToEditVisitor:
 			]
 	
 	@staticmethod
-	def visitUser(user: wraps.User | empty.User, *, advanced: bool = False) -> list[widgets.ToEdit]:
+	def visitUser(user: wraps.User | empty.User) -> list[widgets.ToEdit]:
 		model = user.model
-		if advanced:
-			return [
-				ToEdit("old", "Old password", "", "password"),
-				ToEdit("password", "Password", "", "password"),
-				ToEdit("repeated", "Repeat password", "", "password")
-				]
-		else:
-			return [
-				ToEdit("name", "Name", model.name),
-				ToEdit("surname", "Surname", model.surname),
-				ToEdit("role", "Role", model.role)
-				]
+		return [
+			ToEdit("login", "Login", model.login),
+			ToEdit("name", "Name", model.name),
+			ToEdit("surname", "Surname", model.surname),
+			ToSelect("role", "Role", model.role)
+			]
 		
 	@staticmethod
 	def visitResource(resource: wraps.Resource | empty.Resource) -> list[widgets.ToEdit]:
