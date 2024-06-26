@@ -11,13 +11,12 @@ from types import NoneType
 import elemental
 import datetime
 
-# This is the only file in which there are sql select and where
-
 class General:
 
 	def __new__(cls: type, item: str | int | InputModel | NoneType = None, 
 		session: AbstractSession | NoneType = None) -> General | NoneType:
 		if item is None and cls is not General:
+			print("None")
 			return None
 		obj = super().__new__(cls)
 		if cls is General:
@@ -38,7 +37,7 @@ class General:
 	def makeOfModel(self: Self, model: InputModel, item: str | NoneType = None) -> Self:
 		return model.acceptVisitor(self, item)
 		
-	def visitUser(self: Self, model: inpute.UserCredentials | inpute.User) -> User:
+	def visitUser(self: Self, model: inpute.User) -> User:
 		return User(model, self.session)
 		
 	def visitProject(self: Self, model: inpute.Project) -> Project:
@@ -113,10 +112,8 @@ class User(General):
 			self.login = ide
 		elif type(ide) == int:
 			self.login = self.nameOfId(ide)
-		elif type(ide) == inpute.UserCredentials:
-			self.login = ide.login
 		elif type(ide) == inpute.User:
-			self.login = ide.credentials.login
+			self.login = ide.login
 		else:
 			raise ValueError(ide, self.__class__)
 		
@@ -139,10 +136,10 @@ class User(General):
 		if not resource:
 			return self.model.role == sql.ProjectRole.manager
 		else:
-			return project.owner == self
+			return resource.owner == self
 		
 	def canEditUser(self: Self, user: User | NoneType = None) -> bool:
-		return self.model.role == sql.ProjectRole.admin
+		return self.model.role == sql.ProjectRole.admin and self != user
 		
 	def canEdit(self: Self, kind: str, item: Project | Resource | User | NoneType = None) -> bool:
 		if kind == "project":
@@ -157,8 +154,8 @@ class User(General):
 			return self.model.role == sql.ProjectRole.admin or self.inProject(wrap)
 		elif kind == "resource":
 			role = self.model.role
-			return role == sql.ProjectRole.admin or
-				role == sql.ProjectRole.manager
+			return (role == sql.ProjectRole.admin or
+				role == sql.ProjectRole.manager )
 		elif kind == "user":
 			if wrap == self:
 				return True
@@ -202,9 +199,18 @@ class User(General):
 		
 		return super().__getattr__(attr)
 		
+	def __setattr__(self: Self, attr: str, value: Any) -> NoneType:
+		if attr == "password":
+			with self.subsession as subsession:
+				model = self.model
+				model.password = value
+				subsession.add(model)
+			return
+		self.__dict__[attr] = value
+		
 	def acceptVisitor(self: Self, visitor: Any, *,
 		advanced: bool = False) -> Any:
-		return visitor.visitUser(self, advanced = advanced)
+		return visitor.visitUser(self)
 	
 	def delete(self: Self) -> NoneType:
 		with self.subsession as subsession:
@@ -320,7 +326,13 @@ class Resource(General):
 					select(sql.ProjectsToResourcesLkp.project_id)
 					.where(sql.ProjectsToResourcesLkp.resource_id == self.id),
 					True )) ]
-						
+		elif attr == "owner":
+			with self.subsession as subsession:
+				return User(subsession(Query(
+					select(sql.TechnicalResources.owner_id)
+					.where(sql.TechnicalResources.name == self.name)
+				)))
+					
 		return super().__getattr__(attr)
 	
 	def addProject(self: Self, project: Project, allocation: float = 1.0) -> NoneType:

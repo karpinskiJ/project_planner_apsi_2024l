@@ -11,7 +11,7 @@ from widgets import ToEdit
 class Answer:
 
 	def __init__(self: Self, template: str, title: str, logged: bool = True) -> NoneType:
-		self.variables = { title : "title" }
+		self.variables = { "title" : title }
 		self.template = template
 		self.logged = logged
 		
@@ -74,10 +74,8 @@ class SuccessCreateAnswer(SuccessAnswer):
 		
 class SuccessChangeAnswer(SuccessAnswer):
 	
-	def __init__(self: Self, kind: str, item: str, newToken: str) -> NoneType:
+	def __init__(self: Self, kind: str, item: str) -> NoneType:
 		super().__init__("Successfully changed " + kind + ": " + item)
-		if newToken:
-			self.newToken = newToken
 		
 class SuccessDeleteAnswer(SuccessAnswer):
 	
@@ -93,25 +91,25 @@ def editMessageHeader(kind: str, item: str) -> tuple[str, str | NoneType, str | 
 class ToEditAnswer(Answer):
 
 	def __init__(self: Self, kind: str,
-		toEdits: list[widgets.ToEdit], item: str | NoneType = None, *,
-		advanced: bool = False) -> NoneType:
+		toEdits: list[widgets.ToEdit], item: str | NoneType = None, 
+		select: bool = False, *,
+		passwords: bool = False) -> NoneType:
 		title, header, subheader = editMessageHeader(kind, item)
 		super().__init__("edit.html", title)
 		self.variables['liste'] = toEdits
-		target = '/' + kind
-		if item:
-			target += '?item=' + item
-		if advanced:
-			target += "&advanced=true"
+		self.variables['role'] = select
+		target = None
+		if passwords:
+			target = "/changedPassword"
+		else:
+			target = '/' + kind + "?item=" + item
 		self.variables['target'] = target
 		self.variables['header'] = header
 		self.variables['subheader'] = subheader
+		self.variables['back'] = "/lookOne?kind=" + kind + "&item=" + item
 		enter = None
 		if not item:
-			if kind == "user":
-				enter = "Register"
-			else:
-				enter = "Create"
+			enter = "Create"
 		else:
 			enter = "Change"
 		self.variables['enter'] = enter

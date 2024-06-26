@@ -91,16 +91,17 @@ def create(request: Request, kind: Annotated[str | NoneType, Query()] = None,
         return PageNotExistAnswer().toHTML(request)
     if not User(user).canEdit(kind):
         return CannotCreateAnswer(kind)
-    return ToEditAnswer(empty.Model.make(kind).acceptVisitor(ToEditVisitor)).toHTML(request)
+    return ToEditAnswer(kind, empty.Model.make(kind).acceptVisitor(ToEditVisitor), 
+		select = kind == "user").toHTML(request)
 
 @app.get('/changePassword', response_class = HTMLResponse)
 def changePassword(request: Request, 
 	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
 	user = checkToken(token)
-    if isinstance(user, Answer):
-        return user.toHTML(request)
-    return ToEditAnswer("user", User(user).acceptVisitor(ToEditVisitor,
-		advanced = True), user, advanced = True).toHTML(request)
+	if isinstance(user, Answer):
+		return user.toHTML(request)
+	return ToEditAnswer("user", ToEditVisitor.visitChangePassword(),
+		user, passwords = True).toHTML(request)
 
 @app.post('/changedPassword', response_class = HTMLResponse)
 def changedPassword(request: Request, old: Annotated[str | NoneType, Form()] = None,
@@ -108,40 +109,36 @@ def changedPassword(request: Request, old: Annotated[str | NoneType, Form()] = N
 	repeated: Annotated[str | NoneType, Form()] = None,
 	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
 	user = checkToken(token)
-    if isinstance(user, Answer):
-        return user.toHTML(request)
-    if not (old and password and repeated):
+	if isinstance(user, Answer):
+		return user.toHTML(request)
+	if not (old and password and repeated):
 		return LackOfFieldsAnswer("password", user).toHTML(request)
-	if not authHandler.verify(old, user.model.password):
-        return BadPasswordAnswer().toHTML(request, False)
+	if not authHandler.verify(old, User(user).model.password):
+		return BadPasswordAnswer().toHTML(request)
 	if password != repeated:
-		return NotConsistentAnswer("passwords")
+		return NotConsistentAnswer("passwords").toHTML(request)
 	User(user).password = authHandler.hash(password)
-	return SuccessAnswer("Successfully changed password")
+	return SuccessAnswer("Successfully changed password").toHTML(request)
 	
 
 @app.get('/edit', response_class=HTMLResponse)
 def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
-         item: Annotated[str | NoneType, Query()] = None,
-         token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-    user = checkToken(token)
-    if isinstance(user, Answer):
-        return user.toHTML(request)
-    if kind == "user" and item is None:
-        item = user
-    if kind != "project" and kind != "resource" and kind != "user" or item is None:
-        return PageNotExistAnswer().toHTML(request)
-    user = User(user)
-    wrap = General.make(kind, item)
-    if not wrap.exists:
-        return ItemNotExistsAnswer(kind, item).toHTML(request)
-    if kind == "user":
-        if user != wrap:
-            return CannotChangeAnswer("user", item).toHTML(request)
-    else:
-        if not user.canEdit(kind, wrap):
-            return CannotChangeAnswer(kind, item).toHTML(request)
-    return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item).toHTML(request)
+	item: Annotated[str | NoneType, Query()] = None,
+	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+	user = checkToken(token)
+	if isinstance(user, Answer):
+		return user.toHTML(request)
+	if kind == "user" and item is None:
+		item = user
+	if kind != "project" and kind != "resource" and kind != "user" or item is None:
+		return PageNotExistAnswer().toHTML(request)
+	user = User(user)
+	wrap = General.make(kind, item)
+	if not wrap.exists:
+		return ItemNotExistsAnswer(kind, item).toHTML(request)
+	if not user.canEdit(kind, wrap):
+		return CannotChangeAnswer(kind, item).toHTML(request)
+	return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item, kind == "user").toHTML(request)
 
 
 # to change
@@ -172,20 +169,24 @@ def compose(request: Request, item: Annotated[str, Query()] = None,
 
 @app.post('/user', response_class=HTMLResponse)
 def user(request: Request, login: Annotated[str | NoneType, Form()] = None,
-         password: Annotated[str | NoneType, Form()] = None,
-         repeated: Annotated[str | NoneType, Form()] = None,
-         old: Annotated[str | NoneType, Form()] = None,
          name: Annotated[str | NoneType, Form()] = None,
          surname: Annotated[str | NoneType, Form()] = None,
          role: Annotated[str | NoneType, Form()] = None,
          advanced: Annotated[bool, Query()] = False,
+         item: Annotated[str | NoneType, Query()] = None,
          token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-    item = receiveToken(token)
-    logged = item is not None
-    inputModel = inpute.makeUser(login, name, surname, role, password = "password")
-    if inputModel is None:
-        return LackOfFieldsAnswer("user", item).toHTML(request, logged)
-    return edited("user", inputModel, item, User(item)).toHTML(request, logged)
+	user = receiveToken(token)
+	if isinstance(user, Answer):
+		return user.toHTML(request)
+	user = User(user)
+	if item is None and not user.canEditUser():
+		return CannotCreateAnswer("user").toHTML(request)
+	inputModel = inpute.User([login, name, surname, role], password = "password")
+	if inputModel is None:
+		return LackOfFieldsAnswer("user", item).toHTML(request, logged)
+	if item is not None and not user.canEditUser(wraps.User(item)):
+		return CannotChangeAnswer("user", item).toHTML(request)
+	return edited("user", inputModel, item, user).toHTML(request, logged)
 
 
 @app.post('/project', response_class=HTMLResponse)

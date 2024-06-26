@@ -9,16 +9,18 @@ CREATE TABLE users(
 	name      varchar(50) NOT NULL,
 	surname  varchar(50) NOT NULL,
 	role     project_role NOT NULL,
+	manager_id integer,
 	setup_time timestamp NOT NULL,
-	CONSTRAINT pk_users PRIMARY KEY ( "id" )
+	CONSTRAINT pk_users PRIMARY KEY ( "id" ),
+	CONSTRAINT fk_manager_users FOREIGN KEY ( manager_id ) REFERENCES users( id )
 );
-INSERT INTO users (login, password, name, surname, role, setup_time) VALUES
-('manager1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'John', 'Doe', 'manager', NOW()),
-('worker1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Jane', 'Smith', 'worker', NOW()),
-('worker2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Emily', 'Johnson', 'worker', NOW()),
-('admin1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Alice', 'Williams', 'admin', NOW()),
-('manager2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Robert', 'Brown', 'manager', NOW()),
-('worker3', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Michael', 'Davis', 'worker', NOW()),
+INSERT INTO users (login, password, name, surname, role, manager_id, setup_time) VALUES
+('manager1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'John', 'Doe', 'manager', NULL, NOW()),
+('worker1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Jane', 'Smith', 'worker', 1, NOW()),
+('worker2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Emily', 'Johnson', 'worker', 1, NOW()),
+('admin1', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Alice', 'Williams', 'admin', NULL, NOW()),
+('manager2', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Robert', 'Brown', 'manager', NULL, NOW()),
+('worker3', '$2b$12$HDuQW0Vp97aVjBY4LBgltO2Hn6sPKtyw92A2BoNzStEjolgr6SwLm', 'Michael', 'Davis', 'worker', 5, NOW());
 
 CREATE TYPE project_status AS ENUM ('pending', 'in_progress','completed');
 CREATE TABLE projects(
@@ -30,7 +32,7 @@ CREATE TABLE projects(
     status project_status NOT NULL,
     owner_id integer NOT NULL,
     CONSTRAINT pk_projects PRIMARY KEY (id),
-    CONSTRAINT fk_owner FOREIGN KEY ( owner_id ) REFERENCES users ( "id" )
+    CONSTRAINT fk_owner_projects FOREIGN KEY ( owner_id ) REFERENCES users ( "id" )
 );
 
 --INIT DATA
@@ -46,10 +48,10 @@ CREATE TABLE technical_resources(
     name VARCHAR(100) NOT NULL,
     owner_id integer,
     type resource_type NOT NULL,
-    CONSTRAINT pk_technical_resources PRIMARY KEY (id)                 ,
-    CONSTRAINT fk_user_id FOREIGN KEY (owner_id) REFERENCES users ("id")
+    CONSTRAINT pk_technical_resources PRIMARY KEY (id),
+    CONSTRAINT fk_owner_resources FOREIGN KEY (owner_id) REFERENCES users ("id")
 );
-INSERT INTO technical_resources (name,onwer_id,type) VALUES
+INSERT INTO technical_resources (name,owner_id,type) VALUES
  ('car',1,'vehicle'),
  ('laptop',1,'it_equipment'),
  ('screen',1,'it_equipment'),
@@ -65,11 +67,11 @@ create table projects_to_resources_lkp(
     project_id integer NOT NULL,
     user_id integer,
     resource_id integer,
-    allocation_part decimal  ,
-     CONSTRAINT pk_projects_to_members PRIMARY KEY ("id"),
-     CONSTRAINT fk_project_id FOREIGN KEY (project_id) REFERENCES projects ("id"),
-     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users ("id"),
-     CONSTRAINT fk_resource_id FOREIGN KEY (resource_id) REFERENCES technical_resources ("id")
+    allocation_part decimal,
+    CONSTRAINT pk_projects_to_members PRIMARY KEY (id),
+    CONSTRAINT fk_project_id FOREIGN KEY (project_id) REFERENCES projects ("id"),
+    CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users ("id"),
+    CONSTRAINT fk_resource_id FOREIGN KEY (resource_id) REFERENCES technical_resources ("id")
 
 );
 -- Insert sample data into projects_to_resources_lkp table

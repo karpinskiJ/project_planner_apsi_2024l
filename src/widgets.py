@@ -35,7 +35,8 @@ class ToEdit:
 	# for generating text input fields
 
 	def __init__(self: Self, name: str, label: str,
-		value: str | NoneType = None, typee: str = "text") -> NoneType:
+		value: str | NoneType = None, typee: str = "text", *, 
+		options: NoneType | list[str] = None) -> NoneType:
 		self.name = name
 		self.label = label
 		self.value = value

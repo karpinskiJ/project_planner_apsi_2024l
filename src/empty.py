@@ -26,7 +26,7 @@ class User(Model):
 		self.role = "" 
 
 	def acceptVisitor(self: Self, visitor: Any) -> Any:
-		return visitor.visitEmptyUser(self)
+		return visitor.visitUser(self)
 		
 class Project(Model):
 	

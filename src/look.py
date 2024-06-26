@@ -26,15 +26,10 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
 	if kind == "user":
 		if user.canDeleteUser(wrap) and user != wrap:
 			buttons.append(Button("Delete user", "/delete?kind=user&item=" + item))
-		if user == wrap:
-			buttons.append(Button("Edit profile", "/edit?kind=user&item=" + item))
+		if user.canEditUser(wrap):
+			buttons.append(Button("Edit user", "/edit?kind=user&item=" + item))
 		if showProjectsOption:
 			links.append(Link("Projects", "show", "/look?kind=project&of=user&item=" + item))
-		if user.admin:
-			if not wrap.admin:
-				buttons.append(Button("Promote", "/promote?item=" + item))
-			if wrap.admin and wrap.inherits(user):
-				buttons.append(Button("Degrade", "/promote?item=" + item + "&promote=false"))
 	elif kind == "project":
 		links.append(Link("Owner", wrap.owner.login, "/lookOne?kind=user&item=" + wrap.owner.login))
 		if user.canJoinProject(wrap):
@@ -73,7 +68,7 @@ def lookInternal(kind: str, of: str | NoneType = None,
 		if of == "user":
 			liste = wrap.projects
 			if item == user and User(user).canEditProject():
-				buttons.append(Button("Add project", "/add?kind=project"))
+				buttons.append(Button("Add project", "/create?kind=project"))
 		elif of == "resource":
 			liste = wrap.projects
 		elif of is None:
@@ -86,7 +81,7 @@ def lookInternal(kind: str, of: str | NoneType = None,
 		elif of is None:
 			liste = General().all("user")
 			if User(user).canEditUser():
-				buttons.append(Button("Add user", "/add?kind=user"))
+				buttons.append(Button("Add user", "/create?kind=user"))
 		else:
 			return PageNotExistAnswer()
 	elif kind == "resource":
@@ -95,7 +90,7 @@ def lookInternal(kind: str, of: str | NoneType = None,
 		elif of is None:
 			liste = General().all("resource")
 			if User(user).canEditResource():
-				buttons.append(Button("Add resource", "/add?kind=resource"))
+				buttons.append(Button("Add resource", "/create?kind=resource"))
 		else:
 			return PageNotExistAnswer()
 	# elif kind == "calendar":

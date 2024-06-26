@@ -26,8 +26,7 @@ class LookOneVisitor:
 			Label("Login", model.login),
 			Label("Name", model.name),
 			Label("Surname", model.surname),
-			Label("Role", model.role),
-			Label("Position", user.position)
+			Label("Role", model.role)
 		]
 		
 	@staticmethod
@@ -58,8 +57,7 @@ class ToEditVisitor:
 		return [
 			ToEdit("login", "Login", model.login),
 			ToEdit("name", "Name", model.name),
-			ToEdit("surname", "Surname", model.surname),
-			ToSelect("role", "Role", model.role)
+			ToEdit("surname", "Surname", model.surname)
 			]
 		
 	@staticmethod
@@ -81,6 +79,15 @@ class ToEditVisitor:
 		return [
 			ToEdit("password", "Type password", "", typee = "password")
 		]
+		
+	@staticmethod
+	def visitChangePassword() -> list[widgets.ToEdit]:
+		return [
+			ToEdit("old", "Old password", "", typee = "password"),
+			ToEdit("password", "New password", "", typee = "password"),
+			ToEdit("repeated", "Repeated password", "", typee = "password")
+		]
+		
 class LinkVisitor:
 	# This visitor visits wraps
 	# for getting their unique names

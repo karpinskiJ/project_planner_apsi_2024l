@@ -4,11 +4,6 @@ from typing import Any, Self
 from types import NoneType
 from datetime import date, datetime
 
-class OldPassword:
-	
-	def __init__(self: Self, value: str | NoneType) -> NoneType:
-		self.value = value
-
 def nothing(arg):
 	if arg is None:
 		return True
@@ -19,25 +14,19 @@ def nothing(arg):
 class InputModel:
 	
 	def __new__(cls: type, args: list[Any], *, 
-		old: OldPassword | NoneType = None)-> Self | NoneType:
+		password: str | NoneType = None)-> Self | NoneType:
 		if any([ nothing(field) for field in args ]):
 			return None
-		if old and nothing(old.value):
+		if password == "":
 			return None
 		obj = super().__new__(cls)
-		obj.init(old = old.value if old else None, *args)
+		obj.init(*args, password = password)
 		return obj
-		
-	def __getattr__(self: Self, attr: str) -> Any:
-		if attr == "notConsistent":
-			return None
-		else:
-			raise AttributeError(attr, self.__class__)
 
 class Project(InputModel):
 
 	def init(self: Self, name: str, description: str,
-		start_date: date, end_date: date, status: str, *,old: NoneType = None) -> NoneType:
+		start_date: date, end_date: date, status: str, *, password: NoneType = None) -> NoneType:
 		self.name = name
 		self.description = description
 		self.start_date = start_date.date()
@@ -58,7 +47,7 @@ class Project(InputModel):
 			return sql.Projects(name = self.name, description = self.description, 
 				start_date = self.start_date, end_date = self.end_date,
 				status = self.status, owner_id = self.owner_id)
-		return super().__getattr__(attr)
+		raise ValueError(self, attr)
 	
 	def __setattr__(self: Self, attr: str, value: Any) -> NoneType:
 		if attr == "owner":
@@ -69,26 +58,37 @@ class Project(InputModel):
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitProject(self)
 
-class UserDescription(InputModel):
+class User(InputModel):
 
-	def init(self: Self, name: str, surname: str, role: str, *,
+	def init(self: Self, login: str, name: str, surname: str, role: str, *,
 		password: str | NoneType = None) -> NoneType:
+		self.login = login
 		self.name = name
 		self.surname = surname
 		self.role = role
 		self.password = password
 		
 	def sendTo(self: Self, sqlModel: sql.Users) -> NoneType:
+		sqlModel.login = self.login
 		sqlModel.name = self.name
 		sqlModel.surname = self.surname
 		sqlModel.role = self.role
 			
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
-		return visitor.visitUser(item)
+		return visitor.visitUser(self)
+		
+	def __getattr__(self: Self, attr: str) -> Any:
+		if attr == "uniqueName":
+			return self.login
+		elif attr == "toSQL":
+			return sql.Users(login = self.login, name = self.name, 
+				surname = self.surname, role = self.role, password = self.password, setup_time = 
+				datetime.now())
+		raise ValueError(self, attr)
 		
 class Resource(InputModel):
 
-	def init(self: Self, name: str, *, old: NoneType = None) -> NoneType:
+	def init(self: Self, name: str, *, password: NoneType = None) -> NoneType:
 		self.name = name
 		
 	def sendTo(self: Self, sqlModel: sql.TechnicalResources) -> NoneType:
@@ -99,7 +99,7 @@ class Resource(InputModel):
 			return self.name
 		elif attr == "toSQL":
 			return sql.TechnicalResources(name = self.name)
-		return super().__getattr__(attr)
+		raise ValueError(self, attr)
 		
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitResource(self)
