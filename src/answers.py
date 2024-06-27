@@ -91,22 +91,23 @@ def editMessageHeader(kind: str, item: str) -> tuple[str, str | NoneType, str | 
 class ToEditAnswer(Answer):
 
 	def __init__(self: Self, kind: str,
-		toEdits: list[widgets.ToEdit], item: str | NoneType = None, 
-		select: bool = False, *,
+		toEdits: list[widgets.ToEdit], item: str | NoneType = None, *,
 		passwords: bool = False) -> NoneType:
 		title, header, subheader = editMessageHeader(kind, item)
 		super().__init__("edit.html", title)
 		self.variables['liste'] = toEdits
-		self.variables['role'] = select
 		target = None
 		if passwords:
 			target = "/changedPassword"
 		else:
-			target = '/' + kind + "?item=" + item
+			target = '/' + kind
+			if item:
+				target += "?item=" + item
 		self.variables['target'] = target
 		self.variables['header'] = header
 		self.variables['subheader'] = subheader
-		self.variables['back'] = "/lookOne?kind=" + kind + "&item=" + item
+		if item:
+			self.variables['back'] = "/lookOne?kind=" + kind + "&item=" + item
 		enter = None
 		if not item:
 			enter = "Create"

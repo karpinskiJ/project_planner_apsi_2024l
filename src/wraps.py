@@ -76,6 +76,11 @@ class General:
 			if not self.session:
 				self.session = session
 			return closing(session)
+		elif attr == "managers":
+			with self.subsession as subsession:
+				return subsession(Query(
+					select(sql.Users.login).where(sql.Users.role == sql.ProjectRole.manager),
+					True ))
 		else:
 			raise AttributeError(attr, self.__class__)
 			

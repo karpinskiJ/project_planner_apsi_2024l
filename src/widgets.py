@@ -41,3 +41,4 @@ class ToEdit:
 		self.label = label
 		self.value = value
 		self.type = typee
+		self.options = options

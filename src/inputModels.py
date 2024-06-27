@@ -14,19 +14,20 @@ def nothing(arg):
 class InputModel:
 	
 	def __new__(cls: type, args: list[Any], *, 
-		password: str | NoneType = None)-> Self | NoneType:
+		password: str | NoneType = None, manager: str | NoneType = None) -> Self | NoneType:
 		if any([ nothing(field) for field in args ]):
 			return None
 		if password == "":
 			return None
 		obj = super().__new__(cls)
-		obj.init(*args, password = password)
+		obj.init(*args, password = password, manager = manager)
 		return obj
 
 class Project(InputModel):
 
 	def init(self: Self, name: str, description: str,
-		start_date: date, end_date: date, status: str, *, password: NoneType = None) -> NoneType:
+		start_date: date, end_date: date, status: str, *, password: NoneType = None,
+		manager: NoneType = None) -> NoneType:
 		self.name = name
 		self.description = description
 		self.start_date = start_date.date()
@@ -60,12 +61,14 @@ class Project(InputModel):
 
 class User(InputModel):
 
-	def init(self: Self, login: str, name: str, surname: str, role: str, *,
-		password: str | NoneType = None) -> NoneType:
+	def init(self: Self, login: str, name: str, surname: str, *,
+		password: str | NoneType = None, manager: str | NoneType = None) -> NoneType:
+		import wraps
 		self.login = login
 		self.name = name
 		self.surname = surname
-		self.role = role
+		self.role = sql.ProjectRole.worker if manager else sql.ProjectRole.manager
+		self.manager_id = wraps.User(manager).id if manager else None
 		self.password = password
 		
 	def sendTo(self: Self, sqlModel: sql.Users) -> NoneType:
@@ -73,6 +76,7 @@ class User(InputModel):
 		sqlModel.name = self.name
 		sqlModel.surname = self.surname
 		sqlModel.role = self.role
+		sqlModel.manager_id = self.manager_id
 			
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitUser(self)
@@ -82,13 +86,14 @@ class User(InputModel):
 			return self.login
 		elif attr == "toSQL":
 			return sql.Users(login = self.login, name = self.name, 
-				surname = self.surname, role = self.role, password = self.password, setup_time = 
-				datetime.now())
+				surname = self.surname, role = self.role, manager_id = self.manager_id,
+				password = self.password, setup_time = datetime.now())
 		raise ValueError(self, attr)
 		
 class Resource(InputModel):
 
-	def init(self: Self, name: str, *, password: NoneType = None) -> NoneType:
+	def init(self: Self, name: str, *, password: NoneType = None,
+		manager: NoneType = None) -> NoneType:
 		self.name = name
 		
 	def sendTo(self: Self, sqlModel: sql.TechnicalResources) -> NoneType:

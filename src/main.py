@@ -20,6 +20,7 @@ import sqlmodel
 from services import *
 import sqlModels as sql
 import numpy as np
+import sys
 
 
 @app.get('/', response_class=Response)
@@ -91,8 +92,7 @@ def create(request: Request, kind: Annotated[str | NoneType, Query()] = None,
         return PageNotExistAnswer().toHTML(request)
     if not User(user).canEdit(kind):
         return CannotCreateAnswer(kind)
-    return ToEditAnswer(kind, empty.Model.make(kind).acceptVisitor(ToEditVisitor), 
-		select = kind == "user").toHTML(request)
+    return ToEditAnswer(kind, empty.Model.make(kind).acceptVisitor(ToEditVisitor)).toHTML(request)
 
 @app.get('/changePassword', response_class = HTMLResponse)
 def changePassword(request: Request, 
@@ -138,7 +138,7 @@ def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
 		return ItemNotExistsAnswer(kind, item).toHTML(request)
 	if not user.canEdit(kind, wrap):
 		return CannotChangeAnswer(kind, item).toHTML(request)
-	return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item, kind == "user").toHTML(request)
+	return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item).toHTML(request)
 
 
 # to change
@@ -171,8 +171,7 @@ def compose(request: Request, item: Annotated[str, Query()] = None,
 def user(request: Request, login: Annotated[str | NoneType, Form()] = None,
          name: Annotated[str | NoneType, Form()] = None,
          surname: Annotated[str | NoneType, Form()] = None,
-         role: Annotated[str | NoneType, Form()] = None,
-         advanced: Annotated[bool, Query()] = False,
+         manager: Annotated[str | NoneType, Form()] = None,
          item: Annotated[str | NoneType, Query()] = None,
          token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
 	user = receiveToken(token)
@@ -181,12 +180,17 @@ def user(request: Request, login: Annotated[str | NoneType, Form()] = None,
 	user = User(user)
 	if item is None and not user.canEditUser():
 		return CannotCreateAnswer("user").toHTML(request)
-	inputModel = inpute.User([login, name, surname, role], password = "password")
+	print(manager)
+	inputModel = inpute.User([login, name, surname], manager = manager, password = "password")
 	if inputModel is None:
-		return LackOfFieldsAnswer("user", item).toHTML(request, logged)
+		print("Lack of fields")
+		return LackOfFieldsAnswer("user", item).toHTML(request)
 	if item is not None and not user.canEditUser(wraps.User(item)):
+		print("Cannot change")
 		return CannotChangeAnswer("user", item).toHTML(request)
-	return edited("user", inputModel, item, user).toHTML(request, logged)
+	print("To edited")
+	sys.stdout.flush()
+	return edited("user", inputModel, item, user).toHTML(request)
 
 
 @app.post('/project', response_class=HTMLResponse)

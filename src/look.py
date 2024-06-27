@@ -30,6 +30,9 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
 			buttons.append(Button("Edit user", "/edit?kind=user&item=" + item))
 		if showProjectsOption:
 			links.append(Link("Projects", "show", "/look?kind=project&of=user&item=" + item))
+		if user.manager:
+			links.append(Link("Manager", user.manager.login, "/lookOne?kind=user&item="
+				+ user.manager.login))
 	elif kind == "project":
 		links.append(Link("Owner", wrap.owner.login, "/lookOne?kind=user&item=" + wrap.owner.login))
 		if user.canJoinProject(wrap):

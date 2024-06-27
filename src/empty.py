@@ -23,7 +23,7 @@ class User(Model):
 		self.login = ""
 		self.name = ""
 		self.surname = ""
-		self.role = "" 
+		self.manager = "" 
 
 	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitUser(self)

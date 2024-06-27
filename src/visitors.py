@@ -57,7 +57,9 @@ class ToEditVisitor:
 		return [
 			ToEdit("login", "Login", model.login),
 			ToEdit("name", "Name", model.name),
-			ToEdit("surname", "Surname", model.surname)
+			ToEdit("surname", "Surname", model.surname),
+			ToEdit("manager", "Manager", user.manager, 
+				options = [""] + wraps.General().managers)
 			]
 		
 	@staticmethod

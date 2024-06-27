@@ -15,6 +15,7 @@ def edited(kind: str, model: InputModel, item: str | NoneType = None,
 	General().edit(model, General.make(kind, item) if item else None)
 	if kind == "project" and not item:
 		user.addProject(wraps.Project(model))
+	print("Here")
 	if item:
 		return SuccessChangeAnswer(kind, General().makeOfModel(model, item).uniqueName)
 	else:
