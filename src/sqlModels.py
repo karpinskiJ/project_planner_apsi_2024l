@@ -64,7 +64,7 @@ class Users(SQLModel, table=True):
 class TechnicalResources(SQLModel, table=True):
     __tablename__ = "technical_resources"
     id: Optional[int] = Field(primary_key=True)
-    owner_id: int
+    manager_id: int
     name: str = Field(max_length=100)
     type: ResourceType = Column(ENUM(ResourceType))
 
@@ -92,4 +92,3 @@ class ProjectsToResourcesLkp(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id")
     resource_id: int = Field(foreign_key="technical_resources.id")
     allocation_part: float
-

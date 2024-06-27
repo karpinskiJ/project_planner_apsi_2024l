@@ -22,6 +22,8 @@ from fastapi.responses import StreamingResponse
 import csv
 import io
 from typing import Annotated, Optional
+from sqlModels import ProjectRole
+
 
 @app.get('/', response_class=Response)
 def main(request: Request, token: Annotated[str | NoneType, Cookie()] = None) -> Response:
@@ -88,57 +90,135 @@ def create(request: Request, kind: Annotated[str | NoneType, Query()] = None,
     user = checkToken(token)
     if isinstance(user, Answer):
         return user.toHTML(request)
-    if not ( kind == "project" or kind == "resource" or kind == "user"):
+    if not (kind == "project" or kind == "resource" or kind == "user"):
         return PageNotExistAnswer().toHTML(request)
     if not User(user).canEdit(kind):
         return CannotCreateAnswer(kind)
     return ToEditAnswer(kind, empty.Model.make(kind).acceptVisitor(ToEditVisitor)).toHTML(request)
 
-@app.get('/changePassword', response_class = HTMLResponse)
-def changePassword(request: Request,
-	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-	user = checkToken(token)
-	if isinstance(user, Answer):
-		return user.toHTML(request)
-	return ToEditAnswer("user", ToEditVisitor.visitChangePassword(),
-		user, passwords = True).toHTML(request)
 
-@app.post('/changedPassword', response_class = HTMLResponse)
+@app.get('/changePassword', response_class=HTMLResponse)
+def changePassword(request: Request,
+                   token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    user = checkToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    return ToEditAnswer("user", ToEditVisitor.visitChangePassword(),
+                        user, passwords=True).toHTML(request)
+
+
+@app.post('/changedPassword', response_class=HTMLResponse)
 def changedPassword(request: Request, old: Annotated[str | NoneType, Form()] = None,
-	password: Annotated[str | NoneType, Form()] = None,
-	repeated: Annotated[str | NoneType, Form()] = None,
-	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-	user = checkToken(token)
-	if isinstance(user, Answer):
-		return user.toHTML(request)
-	if not (old and password and repeated):
-		return LackOfFieldsAnswer("password", user).toHTML(request)
-	if not authHandler.verify(old, User(user).model.password):
-		return BadPasswordAnswer().toHTML(request)
-	if password != repeated:
-		return NotConsistentAnswer("passwords").toHTML(request)
-	User(user).password = authHandler.hash(password)
-	return SuccessAnswer("Successfully changed password").toHTML(request)
+                    password: Annotated[str | NoneType, Form()] = None,
+                    repeated: Annotated[str | NoneType, Form()] = None,
+                    token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    user = checkToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    if not (old and password and repeated):
+        return LackOfFieldsAnswer("password", user).toHTML(request)
+    if not authHandler.verify(old, User(user).model.password):
+        return BadPasswordAnswer().toHTML(request)
+    if password != repeated:
+        return NotConsistentAnswer("passwords").toHTML(request)
+    User(user).password = authHandler.hash(password)
+    return SuccessAnswer("Successfully changed password").toHTML(request)
+
+
+@app.get('/add-project/execute', response_class=HTMLResponse)
+def add_project_panel(project, user, allocation, request: Request,
+                      token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    print(project)
+    print(user)
+    with sqlmodel.Session(get_engine()) as session:
+        project_id = session.query(sql.Projects).where(sql.Projects.name == project).first().id
+        user_id = session.query(sql.Users).where(sql.Users.login == user).first().id
+        query = f"""
+        Insert into projects_to_resources_lkp (project_id, user_id,allocation_part) values ({project_id}, {user_id},{float(allocation) / 100})
+        """
+
+        session.exec(query)
+    return RedirectResponse('/lookOne?kind=project&item=' + project)
+
+
+@app.get('/add-project')
+def add_project(project: str, request: Request,
+                token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    user = checkToken(token)
+
+    with sqlmodel.Session(get_engine()) as session:
+        manager_id = session.query(sql.Users).where(sql.Users.login == user).first().id
+        user_workers = session.query(sql.Users).where(sql.Users.manager_id == manager_id).all()
+
+        user_workers = list([user.login for user in user_workers])
+
+        project_id = session.query(sql.Projects).where(sql.Projects.name == project).first().id
+
+    response = templates.TemplateResponse('addToProjectPanel.html'
+                                          , {'request': request,
+                                             'project_id': project_id,
+                                             'project_name': project,
+                                             'workers': user_workers
+                                             }
+                                          )
+    return response
+
+
+@app.get('/add-resource')
+def add_project(project: str, request: Request,
+                token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    user = checkToken(token)
+
+    with sqlmodel.Session(get_engine()) as session:
+        manager_id = session.query(sql.Users).where(sql.Users.login == user).first().id
+        user_resources = session.query(sql.TechnicalResources).where(
+            sql.TechnicalResources.manager_id == manager_id).all()
+
+        user_resources = list([resource.name for resource in user_resources])
+
+        project_id = session.query(sql.Projects).where(sql.Projects.name == project).first().id
+
+    response = templates.TemplateResponse('addToProjectPanelResource.html'
+                                          , {'request': request,
+                                             'project_id': project_id,
+                                             'project_name': project,
+                                             'workers': user_resources
+                                             }
+                                          )
+    return response
+
+
+@app.get('/add-resource/execute', response_class=HTMLResponse)
+def add_project_panel(project, user, allocation, request: Request,
+                      token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    with sqlmodel.Session(get_engine()) as session:
+        project_id = session.query(sql.Projects).where(sql.Projects.name == project).first().id
+        user_id = session.query(sql.TechnicalResources).where(sql.TechnicalResources.name == user).first().id
+        query = f"""
+        Insert into projects_to_resources_lkp (project_id, resource_id,allocation_part) values ({project_id}, {user_id},{float(allocation) / 100})
+        """
+        session.exec(query)
+    return RedirectResponse('/lookOne?kind=project&item=' + project)
 
 
 @app.get('/edit', response_class=HTMLResponse)
 def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
-	item: Annotated[str | NoneType, Query()] = None,
-	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-	user = checkToken(token)
-	if isinstance(user, Answer):
-		return user.toHTML(request)
-	if kind == "user" and item is None:
-		item = user
-	if kind != "project" and kind != "resource" and kind != "user" or item is None:
-		return PageNotExistAnswer().toHTML(request)
-	user = User(user)
-	wrap = General.make(kind, item)
-	if not wrap.exists:
-		return ItemNotExistsAnswer(kind, item).toHTML(request)
-	if not user.canEdit(kind, wrap):
-		return CannotChangeAnswer(kind, item).toHTML(request)
-	return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item).toHTML(request)
+         item: Annotated[str | NoneType, Query()] = None,
+         token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
+    user = checkToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    if kind == "user" and item is None:
+        item = user
+    if kind != "project" and kind != "resource" and kind != "user" or item is None:
+        return PageNotExistAnswer().toHTML(request)
+    user = User(user)
+    wrap = General.make(kind, item)
+    if not wrap.exists:
+        return ItemNotExistsAnswer(kind, item).toHTML(request)
+    if not user.canEdit(kind, wrap):
+        return CannotChangeAnswer(kind, item).toHTML(request)
+    return ToEditAnswer(kind, wrap.acceptVisitor(ToEditVisitor), item).toHTML(request)
 
 
 # to change
@@ -174,23 +254,23 @@ def user(request: Request, login: Annotated[str | NoneType, Form()] = None,
          manager: Annotated[str | NoneType, Form()] = None,
          item: Annotated[str | NoneType, Query()] = None,
          token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
-	user = receiveToken(token)
-	if isinstance(user, Answer):
-		return user.toHTML(request)
-	user = User(user)
-	if item is None and not user.canEditUser():
-		return CannotCreateAnswer("user").toHTML(request)
-	print(manager)
-	inputModel = inpute.User([login, name, surname], manager = manager, password = "password")
-	if inputModel is None:
-		print("Lack of fields")
-		return LackOfFieldsAnswer("user", item).toHTML(request)
-	if item is not None and not user.canEditUser(wraps.User(item)):
-		print("Cannot change")
-		return CannotChangeAnswer("user", item).toHTML(request)
-	print("To edited")
-	sys.stdout.flush()
-	return edited("user", inputModel, item, user).toHTML(request)
+    user = receiveToken(token)
+    if isinstance(user, Answer):
+        return user.toHTML(request)
+    user = User(user)
+    if item is None and not user.canEditUser():
+        return CannotCreateAnswer("user").toHTML(request)
+    print(manager)
+    inputModel = inpute.User([login, name, surname], manager=manager, password="password")
+    if inputModel is None:
+        print("Lack of fields")
+        return LackOfFieldsAnswer("user", item).toHTML(request)
+    if item is not None and not user.canEditUser(wraps.User(item)):
+        print("Cannot change")
+        return CannotChangeAnswer("user", item).toHTML(request)
+    print("To edited")
+    sys.stdout.flush()
+    return edited("user", inputModel, item, user).toHTML(request)
 
 
 @app.post('/project', response_class=HTMLResponse)
@@ -252,6 +332,7 @@ def logged(request: Request,
     response.status_code = 302
     return response
 
+
 @app.get('/join', response_class=Response)
 def join(request: Request, join: Annotated[bool, Query()] = True,
          name: Annotated[str | NoneType, Query()] = None,
@@ -286,7 +367,7 @@ def join(request: Request, join: Annotated[bool, Query()] = True,
 def dashboard(request: Request, kind: Annotated[str | NoneType, Query()] = None,
               token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
-    
+
     if isinstance(user, Answer):
         return user.toHTML(request)
     if kind == "user":
@@ -300,25 +381,60 @@ def dashboard(request: Request, kind: Annotated[str | NoneType, Query()] = None,
               token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
     with sqlmodel.Session(get_engine()) as session:
-        #todo add calendar view for user
-        manager_id = session.query(sql.Users).where(sql.Users.login==user).first().id
 
-        query_people = f"""
+        user_data = session.query(sql.Users).where(sql.Users.login == user).first()
+        print(user_data.role)
+
+        if user_data.role == ProjectRole.worker:
+            user_id = user_data.id
+            query_people = f"""
                    SELECT users.login, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
                      FROM users 
                         INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
                         INNER join projects on projects_to_resources_lkp.project_id = projects.id
-                    WHERE users.manager_id = '{manager_id}'
-        """
-        query_stuff = f"""
-                   SELECT technical_resources.name, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
-                     FROM  technical_resources
-                     INNER JOIN projects_to_resources_lkp ON technical_resources.id = projects_to_resources_lkp.resource_id 
-                        INNER join projects on projects_to_resources_lkp.project_id = projects.id
-                    WHERE technical_resources.manager_id = '{manager_id}'
-        """
-        data_people = session.exec(query_people).all()
-        data_stuff = session.exec(query_stuff).all()
+                    WHERE users.id = '{user_id}'
+                    """
+
+            data_people = session.exec(query_people).all()
+            data_stuff = []
+        elif user_data.role == ProjectRole.manager:
+
+            manager_id = session.query(sql.Users).where(sql.Users.login == user).first().id
+
+            query_people = f"""
+                       SELECT users.login, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
+                         FROM users 
+                            INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                        WHERE users.manager_id = '{manager_id}'
+            """
+            query_stuff = f"""
+                       SELECT technical_resources.name, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
+                         FROM  technical_resources
+                         INNER JOIN projects_to_resources_lkp ON technical_resources.id = projects_to_resources_lkp.resource_id 
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                        WHERE technical_resources.manager_id = '{manager_id}'
+            """
+            data_people = session.exec(query_people).all()
+            data_stuff = session.exec(query_stuff).all()
+        else:
+            query_people = f"""
+                       SELECT users.login, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
+                         FROM users 
+                            INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                        
+            """
+            query_stuff = f"""
+                       SELECT technical_resources.name, projects.name, projects_to_resources_lkp.allocation_part, projects.start_date, projects.end_date, projects.description
+                         FROM  technical_resources
+                         INNER JOIN projects_to_resources_lkp ON technical_resources.id = projects_to_resources_lkp.resource_id 
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                        
+            """
+
+            data_people = session.exec(query_people).all()
+            data_stuff = session.exec(query_stuff).all()
     data = data_people + data_stuff
     employess = list(set([row[0] for row in data]))
     output = [{"user": employee, "assignments": []} for employee in employess]
@@ -384,6 +500,7 @@ def getResource(request: Request, resource: Annotated[str, Path()],
         return PageNotExistAnswer().toHTML(request, receiveToken(token) is not None)
     return FileResponse(filename)
 
+
 @app.get("/download/projects")
 def download_projects(token: Optional[str] = Cookie(None)):
     output = io.StringIO()
@@ -393,13 +510,14 @@ def download_projects(token: Optional[str] = Cookie(None)):
                    SELECT * FROM projects
         """
         data = session.exec(query).all()
-    columns = ["Project_name"," Project_description","start_date","end_date","status"]
+    columns = ["Project_name", " Project_description", "start_date", "end_date", "status"]
     writer.writerow(columns)
     for row in data:
         writer.writerow(row)
     response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=projects_report.csv"
     return response
+
 
 @app.get("/download/users")
 def download_users(token: Optional[str] = Cookie(None)):
@@ -410,7 +528,7 @@ def download_users(token: Optional[str] = Cookie(None)):
                    SELECT id,name,surname,role,setup_time FROM users
         """
         data = session.exec(query).all()
-    columns = ["User_id"," User_name","User_surname","User_role","setup_time"]
+    columns = ["User_id", " User_name", "User_surname", "User_role", "setup_time"]
     writer.writerow(columns)
     for row in data:
         writer.writerow(row)
