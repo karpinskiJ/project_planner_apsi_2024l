@@ -108,6 +108,8 @@ class ToEditAnswer(Answer):
 		self.variables['subheader'] = subheader
 		if item:
 			self.variables['back'] = "/lookOne?kind=" + kind + "&item=" + item
+		else:
+			self.variables['back'] = "/look?kind=" + kind
 		enter = None
 		if not item:
 			enter = "Create"
