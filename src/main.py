@@ -3,10 +3,8 @@ import json
 import inputModels as inpute
 from fastapi import FastAPI, Request, Form, Path, Cookie, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, Response
-from typing import Annotated
 import datetime
 import os
-from answers import *
 from look import *
 from edit import edited
 from wraps import User, Project, Resource
@@ -19,9 +17,11 @@ from visitors import ToEditVisitor
 import sqlmodel
 from services import *
 import sqlModels as sql
-import numpy as np
 import sys
-
+from fastapi.responses import StreamingResponse
+import csv
+import io
+from typing import Annotated, Optional
 
 @app.get('/', response_class=Response)
 def main(request: Request, token: Annotated[str | NoneType, Cookie()] = None) -> Response:
@@ -95,7 +95,7 @@ def create(request: Request, kind: Annotated[str | NoneType, Query()] = None,
     return ToEditAnswer(kind, empty.Model.make(kind).acceptVisitor(ToEditVisitor)).toHTML(request)
 
 @app.get('/changePassword', response_class = HTMLResponse)
-def changePassword(request: Request, 
+def changePassword(request: Request,
 	token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
 	user = checkToken(token)
 	if isinstance(user, Answer):
@@ -119,7 +119,7 @@ def changedPassword(request: Request, old: Annotated[str | NoneType, Form()] = N
 		return NotConsistentAnswer("passwords").toHTML(request)
 	User(user).password = authHandler.hash(password)
 	return SuccessAnswer("Successfully changed password").toHTML(request)
-	
+
 
 @app.get('/edit', response_class=HTMLResponse)
 def edit(request: Request, kind: Annotated[str | NoneType, Query()] = None,
@@ -286,6 +286,7 @@ def join(request: Request, join: Annotated[bool, Query()] = True,
 def dashboard(request: Request, kind: Annotated[str | NoneType, Query()] = None,
               token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
+    
     if isinstance(user, Answer):
         return user.toHTML(request)
     if kind == "user":
@@ -299,7 +300,7 @@ def dashboard(request: Request, kind: Annotated[str | NoneType, Query()] = None,
               token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
     with sqlmodel.Session(get_engine()) as session:
-
+        #todo add calendar view for user
         manager_id = session.query(sql.Users).where(sql.Users.login==user).first().id
 
         query_people = f"""
@@ -382,3 +383,37 @@ def getResource(request: Request, resource: Annotated[str, Path()],
     if not os.path.isfile(filename):
         return PageNotExistAnswer().toHTML(request, receiveToken(token) is not None)
     return FileResponse(filename)
+
+@app.get("/download/projects")
+def download_projects(token: Optional[str] = Cookie(None)):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    with sqlmodel.Session(get_engine()) as session:
+        query = f"""
+                   SELECT * FROM projects
+        """
+        data = session.exec(query).all()
+    columns = ["Project_name"," Project_description","start_date","end_date","status"]
+    writer.writerow(columns)
+    for row in data:
+        writer.writerow(row)
+    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=projects_report.csv"
+    return response
+
+@app.get("/download/users")
+def download_users(token: Optional[str] = Cookie(None)):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    with sqlmodel.Session(get_engine()) as session:
+        query = f"""
+                   SELECT id,name,surname,role,setup_time FROM users
+        """
+        data = session.exec(query).all()
+    columns = ["User_id"," User_name","User_surname","User_role","setup_time"]
+    writer.writerow(columns)
+    for row in data:
+        writer.writerow(row)
+    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=users_report.csv"
+    return response

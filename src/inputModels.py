@@ -48,7 +48,7 @@ class Project(InputModel):
 			return sql.Projects(name = self.name, description = self.description, 
 				start_date = self.start_date, end_date = self.end_date,
 				status = self.status, owner_id = self.owner_id)
-		raise ValueError(self, attr)
+		raise AttributeError(self, attr)
 	
 	def __setattr__(self: Self, attr: str, value: Any) -> NoneType:
 		if attr == "owner":
@@ -104,7 +104,7 @@ class Resource(InputModel):
 			return self.name
 		elif attr == "toSQL":
 			return sql.TechnicalResources(name = self.name)
-		raise ValueError(self, attr)
+		raise AttributeError(self, attr)
 		
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:
 		return visitor.visitResource(self)
