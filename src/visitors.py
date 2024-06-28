@@ -16,7 +16,7 @@ class LookOneVisitor:
 			Label("Description", model.description),
 			Label("Start date", model.start_date),
 			Label("End date", model.end_date),
-			Label("Status", model.status.type)
+			Label("Status", model.status.value)
 			]
 			
 	@staticmethod
