@@ -95,22 +95,22 @@ class User(InputModel):
 		
 class Resource(InputModel):
 
-	def init(self: Self, name: str, owner_id: int, type: str, *, password: NoneType = None,
+	def init(self: Self, name: str, manager_id: int, type: str, *, password: NoneType = None,
 		manager: NoneType = None) -> NoneType:
 		self.name = name
-		self.owner_id = owner_id
+		self.manager_id = manager_id
 		self.type = type
 		
 	def sendTo(self: Self, sqlModel: sql.TechnicalResources) -> NoneType:
 		sqlModel.name = self.name
-		sqlModel.owner_id = self.owner_id
+		sqlModel.manager_id = self.manager_id
 		sqlModel.type = self.type
 		
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.name
 		elif attr == "toSQL":
-			return sql.TechnicalResources(name = self.name, owner_id = self.owner_id, 
+			return sql.TechnicalResources(name = self.name, manager_id = self.manager_id, 
 				type = self.type)
 		raise AttributeError(self, attr)
 		

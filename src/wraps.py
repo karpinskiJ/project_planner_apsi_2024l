@@ -142,7 +142,7 @@ class User(General):
         if not resource:
             return self.model.role == sql.ProjectRole.manager
         else:
-            return resource.owner == self
+            return resource.manager == self
 
     def canEditUser(self: Self, user: User | NoneType = None) -> bool:
         return self.model.role == sql.ProjectRole.admin and self != user
@@ -333,10 +333,10 @@ class Resource(General):
                     select(sql.ProjectsToResourcesLkp.project_id)
                     .where(sql.ProjectsToResourcesLkp.resource_id == self.id),
                     True))]
-        elif attr == "owner":
+        elif attr == "manager":
             with self.subsession as subsession:
                 return User(subsession(Query(
-                    select(sql.TechnicalResources.owner_id)
+                    select(sql.TechnicalResources.manager_id)
                     .where(sql.TechnicalResources.name == self.name)
                 )))
 

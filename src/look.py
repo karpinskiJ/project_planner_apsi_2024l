@@ -50,7 +50,7 @@ def lookOneInternal(kind: str, item: str | bool | NoneType, user: str) -> Answer
             buttons.append(Button("Edit resource", "/edit?kind=resource&item=" + item))
             buttons.append(Button("Delete resource", "/delete?kind=resource&item=" + item))
         links.append(Link("Projects", "show", "/look?kind=project&of=resource&item=" + item))
-
+        links.append(Link("Manager", "show", "/lookOne?kind=user&item=" + wrap.manager.login))
     else:
         return PageNotExistAnswer()
     return OneAnswer(kind, wrap.acceptVisitor(LookOneVisitor),
