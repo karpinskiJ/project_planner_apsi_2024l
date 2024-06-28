@@ -16,7 +16,7 @@ class LookOneVisitor:
 			Label("Description", model.description),
 			Label("Start date", model.start_date),
 			Label("End date", model.end_date),
-			Label("Status", model.status)
+			Label("Status", model.status.value)
 			]
 			
 	@staticmethod
@@ -26,14 +26,15 @@ class LookOneVisitor:
 			Label("Login", model.login),
 			Label("Name", model.name),
 			Label("Surname", model.surname),
-			Label("Role", model.role)
+			Label("Role", model.role.value)
 		]
 		
 	@staticmethod
 	def visitResource(resource: wraps.Resource) -> list[widgets.Label]:
 		model = resource.model
 		return [
-			Label("Name", model.name)
+			Label("Name", model.name),
+			Label("Type", model.type.value)
 			]
 			
 class ToEditVisitor:
@@ -48,7 +49,8 @@ class ToEditVisitor:
 			ToEdit("description", "Description", model.description),
 			ToEdit("start_date", "Start date", model.start_date, "date"),
 			ToEdit("end_date", "End date", model.end_date, "date"),
-			ToEdit("status", "Status", model.status)
+			ToEdit("status", "Status", model.status.value,
+				options = [ e.value for e in sql.ProjectStatus ])
 			]
 	
 	@staticmethod
@@ -66,7 +68,9 @@ class ToEditVisitor:
 	def visitResource(resource: wraps.Resource | empty.Resource) -> list[widgets.ToEdit]:
 		model = resource.model
 		return [
-			ToEdit("name", "Name", model.name)
+			ToEdit("name", "Name", model.name),
+			ToEdit("type", "Type", model.type.value,
+				options = [ e.value for e in sql.ResourceType ])
 			]
 			
 	@staticmethod

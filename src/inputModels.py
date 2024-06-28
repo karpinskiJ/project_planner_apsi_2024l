@@ -26,12 +26,14 @@ class InputModel:
 class Project(InputModel):
 
 	def init(self: Self, name: str, description: str,
-		start_date: date, end_date: date, status: str, *, password: NoneType = None,
+		start_date: date, end_date: date, status: str, owner_id: int, *,
+		password: NoneType = None,
 		manager: NoneType = None) -> NoneType:
 		self.name = name
 		self.description = description
 		self.start_date = start_date.date()
 		self.end_date = end_date.date()
+		self.owner_id = owner_id
 		self.status = status
 		
 	def sendTo(self: Self, sqlModel: sql.Projects) -> NoneType:
@@ -39,6 +41,7 @@ class Project(InputModel):
 		sqlModel.description = self.description
 		sqlModel.start_date = self.start_date
 		sqlModel.end_date = self.end_date
+		sqlModel.owner_id = self.owner_id
 		sqlModel.status = self.status
 		
 	def __getattr__(self: Self, attr: str) -> Any:
@@ -88,22 +91,27 @@ class User(InputModel):
 			return sql.Users(login = self.login, name = self.name, 
 				surname = self.surname, role = self.role, manager_id = self.manager_id,
 				password = self.password, setup_time = datetime.now())
-		raise ValueError(self, attr)
+		raise AttributeError(self, attr)
 		
 class Resource(InputModel):
 
-	def init(self: Self, name: str, *, password: NoneType = None,
+	def init(self: Self, name: str, owner_id: int, type: str, *, password: NoneType = None,
 		manager: NoneType = None) -> NoneType:
 		self.name = name
+		self.owner_id = owner_id
+		self.type = type
 		
 	def sendTo(self: Self, sqlModel: sql.TechnicalResources) -> NoneType:
 		sqlModel.name = self.name
+		sqlModel.owner_id = self.owner_id
+		sqlModel.type = self.type
 		
 	def __getattr__(self: Self, attr: str) -> Any:
 		if attr == "uniqueName":
 			return self.name
 		elif attr == "toSQL":
-			return sql.TechnicalResources(name = self.name)
+			return sql.TechnicalResources(name = self.name, owner_id = self.owner_id, 
+				type = self.type)
 		raise AttributeError(self, attr)
 		
 	def acceptVisitor(self: Self, visitor: Any, item: str | NoneType = None) -> Any:

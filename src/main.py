@@ -208,7 +208,7 @@ def project(request: Request, name: Annotated[str | NoneType, Form()] = None,
     if item is None and not user.canEditProject():
         return CannotCreateAnswer("project").toHTML(request)
     inputModel = inpute.Project([name, description, datetime.datetime.strptime(start_date, "%Y-%m-%d"),
-                                 datetime.datetime.strptime(end_date, "%Y-%m-%d"), status])
+                                 datetime.datetime.strptime(end_date, "%Y-%m-%d"), status, user.id])
     if inputModel is None:
         return LackOfFieldsAnswer("project", item).toHTML(request)
     if item is not None and not user.canEditProject(wraps.Project(item)):
@@ -220,6 +220,7 @@ def project(request: Request, name: Annotated[str | NoneType, Form()] = None,
 
 @app.post('/resource', response_class=HTMLResponse)
 def resource(request: Request, name: Annotated[str | NoneType, Form()] = None,
+			 type: Annotated[str | NoneType, Form()] = None,
              item: Annotated[str | NoneType, Query()] = None,
              token: Annotated[str | NoneType, Cookie()] = None) -> HTMLResponse:
     user = checkToken(token)
@@ -228,7 +229,7 @@ def resource(request: Request, name: Annotated[str | NoneType, Form()] = None,
     user = User(user)
     if item is None and not user.canEditResource():
         return CannotCreateAnswer("resource").toHTML(request)
-    inputModel = inpute.Resource([name])
+    inputModel = inpute.Resource([name, user.id, type])
     if inputModel is None:
         return LackOfFieldsAnswer("resource", item).toHTML(request)
     if item is not None and not user.canEditResource(wraps.Resource(item)):

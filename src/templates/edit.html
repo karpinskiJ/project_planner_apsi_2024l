@@ -18,10 +18,11 @@
                 <label for="{{field.name}}">{{field.label}}:&nbsp;</label>
                 {% if field.options %}
 					<select class="form-control"
-						id="{{field.name}}" name="{{field.name}}"
-						value="{{field.value}}">
+						id="{{field.name}}" name="{{field.name}}">
 						{% for option in field.options %}
-							<option value="{{option}}">{{option}}</option>
+							<option value="{{option}}"
+							{% if option == field.value %} selected {% endif %}>
+							{{option}}</option>
 						{% endfor %}
 					</select>
 				{% else %}

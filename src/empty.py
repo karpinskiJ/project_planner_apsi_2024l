@@ -46,6 +46,7 @@ class Resource(Model):
 	def __init__(self: Self):
 		super().__init__()
 		self.name = ""
+		self.type = ""
 		
 	def acceptVisitor(self: Self, visitor: Any) -> Any:
 		return visitor.visitResource(self)
