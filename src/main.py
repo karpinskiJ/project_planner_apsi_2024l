@@ -23,7 +23,8 @@ import csv
 import io
 from typing import Annotated, Optional
 from sqlModels import ProjectRole
-
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 @app.get('/', response_class=Response)
 def main(request: Request, token: Annotated[str | NoneType, Cookie()] = None) -> Response:
@@ -545,19 +546,44 @@ def download_projects(token: Annotated[str | NoneType, Cookie()] = None):
             return response
         elif user_role ==ProjectRole.worker:
             worker_id = session.query(sql.Users).where(sql.Users.login == user).first().id
-
             query = f"""
-                       SELECT users.login, projects.name, projects.start_date, projects.end_date, projects.description, projects.status
-                         FROM users 
-                            INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
-                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
-                        WHERE projects_to_resources_lkp.user_id = '{worker_id}'
+                SELECT projects.start_date, projects.end_date, projects_to_resources_lkp.allocation_part, 
+                    projects.name, projects.description, projects.status
+                    FROM users 
+                        INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                        INNER JOIN projects ON projects_to_resources_lkp.project_id = projects.id
+                    WHERE projects_to_resources_lkp.user_id = '{worker_id}'
             """
             data = session.exec(query).all()
-            columns = ["User_name","Project_name", "start_date", "end_date", " Project_description","status"]
-            writer.writerow(columns)
+
+            date_allocation = defaultdict(lambda: {'allocation': 0.0, 'projects': []})
+
             for row in data:
-                writer.writerow(row)
+                start_date = row['start_date']
+                end_date = row['end_date']
+                allocation = float(row['allocation_part'])
+                project_info = {
+                    'name': row['name'],
+                    'description': row['description'],
+                    'status': row['status']
+                }
+                current_date = start_date
+                while current_date <= end_date:
+                    date_allocation[current_date]['allocation'] += allocation
+                    date_allocation[current_date]['projects'].append(project_info)
+                    current_date += timedelta(days=1)
+
+            output = io.StringIO()
+            columns = ['Date', 'Allocation', 'Project Names', 'Project Descriptions', 'Project Statuses']
+            writer = csv.writer(output)
+            writer.writerow(columns)
+            for date in sorted(date_allocation.keys()):
+                row = date_allocation[date]
+                project_names = "; ".join([proj['name'] for proj in row['projects']])
+                project_descriptions = "; ".join([proj['description'] for proj in row['projects']])
+                project_statuses = "; ".join([proj['status'] for proj in row['projects']])
+                writer.writerow([date.strftime('%Y-%m-%d'), row['allocation'], project_names, project_descriptions, project_statuses])
+
             response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
             response.headers["Content-Disposition"] = "attachment; filename=worker_projects_report.csv"
             return response
