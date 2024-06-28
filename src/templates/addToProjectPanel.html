@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Users to Projects</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="the_style.css">
+    <link rel="stylesheet" href="navigation.css">
+</head>
+<body>
+<div class="sidenav">
+    <a href="/dashboard?kind=user">Me</a><br/>
+    <a href="/dashboard?kind=project">My projects</a><br/>
+    <a href="/look?kind=user">People</a><br/>
+    <a href="/look?kind=project">Projects</a><br/>
+    <a href="/look?kind=resource">Resources</a><br/>
+    <a href="/calendar-manager-view">Calendar</a><br/>
+    <a href="/download/projects">Generate Report</a><br/>
+    <a href="/advanced">Advanced</a><br/>
+    <a href="/logout">Log out</a><br/>
+</div>
+<div class="container">
+    <div class="panel">
+        <h2 class="text-center">Add User to {{project_name}}</h2>
+        <form id="addUserForm">
+            <div class="form-group">
+                <label for="user">Select User:</label>
+                <select class="form-control" id="user" name="user" required>
+                    {% for worker in workers %}
+                    <option value="{{worker}}">{{worker}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label form="allocation">Allocation:</label>
+                <input type="text" class="form-control" id="allocation" name="allocation" placeholder="100">
+            </div>
+            <button type="button" class="btn btn-secondary" id="addUserButton">Add</button>
+        </form>
+    </div>
+</div>
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Addition</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to add this user to the project?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAddButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    document.getElementById('addUserButton').addEventListener('click', function() {
+        const user = document.getElementById('user').value;
+        const allocation = document.getElementById('allocation').value;
+        const projectName = '{{project_name}}'; // Ensure this is populated correctly
+        window.location.href = `/add-project/execute?project=${projectName}&user=${user}&allocation=${allocation}`;
+    });
+
+
+</script>
+</body>
+</html>

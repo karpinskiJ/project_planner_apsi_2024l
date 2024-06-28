@@ -46,12 +46,12 @@ CREATE TYPE resource_type as ENUM('it_equipment','vehicle','office_equipment','o
 CREATE TABLE technical_resources(
     id serial  NOT NULL,
     name VARCHAR(100) NOT NULL,
-    owner_id integer,
+    manager_id integer,
     type resource_type NOT NULL,
     CONSTRAINT pk_technical_resources PRIMARY KEY (id),
-    CONSTRAINT fk_owner_resources FOREIGN KEY (owner_id) REFERENCES users ("id")
+    CONSTRAINT fk_owner_resources FOREIGN KEY (manager_id) REFERENCES users ("id")
 );
-INSERT INTO technical_resources (name,owner_id,type) VALUES
+INSERT INTO technical_resources (name,manager_id,type) VALUES
  ('car',1,'vehicle'),
  ('laptop',1,'it_equipment'),
  ('screen',1,'it_equipment'),
