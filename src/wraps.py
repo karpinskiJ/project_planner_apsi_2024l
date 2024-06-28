@@ -231,7 +231,8 @@ class User(General):
 
     def addProject(self: Self, project: "Project", allocation: float = 1.0) -> NoneType:
         with self.subsession as subsession:
-            subsession.add(sql.ProjectsToResourcesLkp(project.id, self.id, None, allocation))
+            subsession.add(sql.ProjectsToResourcesLkp(project_id = project.id,
+            user_id = self.id, resource_id = None, allocation = allocation))
 
     def releaseProject(self: Self, project: "Project") -> NoneType:
         with self.subsession as subsession:

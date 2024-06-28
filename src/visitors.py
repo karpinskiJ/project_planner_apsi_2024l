@@ -16,7 +16,7 @@ class LookOneVisitor:
 			Label("Description", model.description),
 			Label("Start date", model.start_date),
 			Label("End date", model.end_date),
-			Label("Status", model.status.value)
+			Label("Status", model.status.type)
 			]
 			
 	@staticmethod
@@ -49,7 +49,7 @@ class ToEditVisitor:
 			ToEdit("description", "Description", model.description),
 			ToEdit("start_date", "Start date", model.start_date, "date"),
 			ToEdit("end_date", "End date", model.end_date, "date"),
-			ToEdit("status", "Status", model.status.value,
+			ToEdit("status", "Status", model.status.value if model.status else model.status,
 				options = [ e.value for e in sql.ProjectStatus ])
 			]
 	
@@ -69,7 +69,7 @@ class ToEditVisitor:
 		model = resource.model
 		return [
 			ToEdit("name", "Name", model.name),
-			ToEdit("type", "Type", model.type.value,
+			ToEdit("type", "Type", model.type.value if model.type else model.type,
 				options = [ e.value for e in sql.ResourceType ])
 			]
 			
