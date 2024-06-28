@@ -503,21 +503,66 @@ def getResource(request: Request, resource: Annotated[str, Path()],
 
 
 @app.get("/download/projects")
-def download_projects(token: Optional[str] = Cookie(None)):
+def download_projects(token: Annotated[str | NoneType, Cookie()] = None):
     output = io.StringIO()
     writer = csv.writer(output)
+    user = checkToken(token)
     with sqlmodel.Session(get_engine()) as session:
-        query = f"""
-                   SELECT * FROM projects
-        """
-        data = session.exec(query).all()
-    columns = ["Project_name", " Project_description", "start_date", "end_date", "status"]
-    writer.writerow(columns)
-    for row in data:
-        writer.writerow(row)
-    response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=projects_report.csv"
-    return response
+        user_role = session.query(sql.Users).where(sql.Users.login == user).first().role
+        print(user_role)
+        if user_role ==ProjectRole.admin:
+            query = f"""
+                    SELECT users.login, projects.name, projects.start_date, projects.end_date, projects.description, projects.status
+                         FROM users 
+                            INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+            """
+            data = session.exec(query).all()
+            columns = ["User_name","Project_name", "start_date", "end_date", " Project_description","status"]
+            writer.writerow(columns)
+            for row in data:
+                writer.writerow(row)
+            response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+            response.headers["Content-Disposition"] = "attachment; filename=admin_projects_report.csv"
+            return response
+        elif user_role ==ProjectRole.manager:
+            manager_id = session.query(sql.Users).where(sql.Users.login == user).first().id
+
+            query = f"""
+                       SELECT users.login, projects.name, projects.start_date, projects.end_date, projects.description, projects.status
+                         FROM users 
+                            INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                        WHERE users.manager_id = '{manager_id}'
+            """
+            data = session.exec(query).all()
+            columns = ["User_name","Project_name", "start_date", "end_date", " Project_description","status"]
+            writer.writerow(columns)
+            for row in data:
+                writer.writerow(row)
+            response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+            response.headers["Content-Disposition"] = "attachment; filename=manager_projects_report.csv"
+            return response
+        elif user_role ==ProjectRole.worker:
+            worker_id = session.query(sql.Users).where(sql.Users.login == user).first().id
+
+            query = f"""
+                       SELECT users.login, projects.name, projects.start_date, projects.end_date, projects.description, projects.status
+                         FROM users 
+                            INNER JOIN projects_to_resources_lkp ON users.id = projects_to_resources_lkp.user_id
+                            INNER join projects on projects_to_resources_lkp.project_id = projects.id
+                        WHERE projects_to_resources_lkp.user_id = '{worker_id}'
+            """
+            data = session.exec(query).all()
+            columns = ["User_name","Project_name", "start_date", "end_date", " Project_description","status"]
+            writer.writerow(columns)
+            for row in data:
+                writer.writerow(row)
+            response = StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
+            response.headers["Content-Disposition"] = "attachment; filename=worker_projects_report.csv"
+            return response
+        else:
+            return f"User role: {user_role} is not allowed!"
 
 
 @app.get("/download/users")
